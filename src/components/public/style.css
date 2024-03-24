@@ -1,0 +1,50 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /*font-family: consolas, serif;*/
+}
+
+.circle {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    /*background: #ccc;*/
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20%;
+}
+
+.logo {
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    background: #fff;
+    border-radius: 50%;
+    filter: brightness(1.0) contrast(1.2);
+    background: url('https://res.cloudinary.com/fahad-shahzad/image/upload/v1653327810/portfolio/IMG_20220507_130216_oueywd.png');
+    background-size: cover;
+}
+
+.text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    color: white;
+    animation: rotateText 10s linear infinite;
+}
+
+.text p {
+    font-size: 30px;
+}
+
+@keyframes rotateText {
+    0% {
+        transform: rotate(360deg)
+    }
+    100% {
+        transform: rotate(0deg)
+    }
+}
