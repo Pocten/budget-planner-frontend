@@ -8,7 +8,7 @@ export const App = () => {
     return (
         <>
             {
-                sessionStorage.getItem("flipcard-login") !== null ? <>
+                sessionStorage.getItem("budgetPlanner-login") !== null ? <>
                     <Navbar/>
                     {routesAfterLogin()}
                     <Footer/>

@@ -5,7 +5,7 @@ import React, {useEffect, useMemo, useRef} from "react";
 import Typed from "../../assets/typed.js";
 
 export const AboutUs = () => {
-    const text = useMemo(() => ["Short Notes", "Quizes", "Words with definitions"], []);
+    const text = useMemo(() => ["Budget Records", "Financial Statements", "Economic Term Definitions"], []);
     const divRef = useRef();
 
     useEffect(() => {
@@ -47,11 +47,11 @@ export const AboutUs = () => {
                                                      alt="flip"/>
                                             </div>
                                             <div className="col-lg-8 col-sm-12">
-                                                <h3>Flash Card App</h3>
+                                                <h3>Budget Planner App</h3>
                                                 <div className="card-text text-bold about">
-                                                Welcome to Flip Card!
+                                                Welcome to Budget Planner!
                                                     <h3>
-                                                        Smart Learning By <span style={{color: 'red'}} ref={divRef}/>
+                                                        Smart financial management with <span style={{color: 'red'}} ref={divRef}/>
                                                     </h3>
                                                 </div>
                                             </div>

@@ -16,7 +16,7 @@ export const Navbar = () => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        sessionStorage.removeItem("flipcard-login")
+        sessionStorage.removeItem("budgetPlanner-login")
         navigate("/")
         window.location.reload()
     }
@@ -71,7 +71,7 @@ export const Navbar = () => {
                                         </li>
                                     </ul>
                                     {
-                                        sessionStorage.getItem("flipcard-login") === null ?
+                                        sessionStorage.getItem("budgetPlanner-login") === null ?
                                             <ul className="navbar-nav d-lg-block">
                                                 <li className="nav-item">
                                                     <Link to={"/login"}>

@@ -19,7 +19,7 @@ export default function EditProfile() {
 
     useEffect(() => {
         const fetchUserDetails = async () => {
-            const storedData = sessionStorage.getItem('flipcard-login');
+            const storedData = sessionStorage.getItem('budgetPlanner-login');
             if (storedData) {
                 const parsedData = JSON.parse(storedData);
                 const jwtToken = parsedData.jwt; // assuming the JWT token is stored with the key 'jwt'

@@ -30,7 +30,7 @@ export const Footer = () => {
                     <p className="mb-0 text-secondary">
                         Copyright © <script>
                         document.write(new Date().getFullYear())
-                    </script> Flash Card App
+                    </script> Budget Planner App
                     </p>
                 </div>
             </div>
