@@ -11,10 +11,13 @@ export default function EditProfile() {
     const [errorMessage, setErrorMessage] = useState('');
     const [userDetails, setUserDetails] = useState({
         userName: '',
-        email: '',
-        password: '',
+        userEmail: '',
+        userPassword: '',
     });
+    const [userId, setUserId] = useState(null); // Add state to hold userId
     const [isLoading, setIsLoading] = useState(false);
+    const [jwtToken, setJwtToken] = useState(null); // State to store JWT token
+    const [updateSuccess, setUpdateSuccess] = useState(false); // State to store the success status
 
 
     useEffect(() => {
@@ -22,35 +25,35 @@ export default function EditProfile() {
             const storedData = sessionStorage.getItem('budgetPlanner-login');
             if (storedData) {
                 const parsedData = JSON.parse(storedData);
-                const jwtToken = parsedData.jwt; // assuming the JWT token is stored with the key 'jwt'
+                const jwtToken = parsedData.jwt;
+                //console.log("TOKEN fetch + "+jwtToken)
+                setJwtToken(jwtToken); // Store JWT token in state
                 if (jwtToken) {
                     const base64Url = jwtToken.split('.')[1];
                     const base64 = base64Url.replace('-', '+').replace('_', '/');
                     const payload = JSON.parse(window.atob(base64));
+                    const fetchedUserId = payload.userId; // Use a temporary variable if setting state directly in async operations
 
-                    const userId = payload.user_id; // This key depends on how the payload is structured
+                    setUserId(fetchedUserId); // Store userId in state
 
                     try {
-                        const response = await axios.get('https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/8', {
+                        const response = await axios.get(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${fetchedUserId}`, {
                             headers: {
                                 Authorization: `Bearer ${jwtToken}`,
                             },
                         });
-                        setUserDetails(response.data); // Assuming you have a state or function to set user details
+                        setUserDetails(response.data);
                     } catch (error) {
                         console.error('Error fetching user details', error);
-                        // Handle error (e.g., showing an error message)
                     }
                 } else {
                     console.log("No JWT Token found");
-                    // Handle the absence of a token (e.g., redirect to login page)
                 }
             }
         };
 
         fetchUserDetails();
-    }, []); // Empty dependency array means this effect will only run once, similar to componentDidMount
-
+    }, []);
 
     const handleUserDetailsChange = (event) => {
         setUserDetails({
@@ -62,18 +65,47 @@ export default function EditProfile() {
     const handleUpdateProfile = async (event) => {
         event.preventDefault();
         setIsLoading(true);
+        setUpdateSuccess(false); // Reset the success status on a new update attempt
+        setErrorMessage('');
+
+        if (!jwtToken || !userId) {
+            setErrorMessage('Authentication error: No JWT Token or User ID found.');
+            return;
+        }
+        
+        const updatePayload = {
+            userEmail: userDetails.userEmail,
+            userPassword: userDetails.userPassword, // Consider securely handling password updates
+        };
+
+        setIsLoading(true);
+        console.log("JWT = " + jwtToken)
+        console.log(updatePayload)
+        console.log("ENDPOINT = " + `https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}`)
         try {
-            // Update user profile details
-            await axios.put(UserAPIs.updateProfile, userDetails);
-            navigate('/profile'); // Redirect to the profile page after successful update
+            await axios.put(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}`, updatePayload, {
+                headers: {
+                    Authorization: `Bearer ${jwtToken}`,
+                },
+            });
+            setUpdateSuccess(true);
+            navigate('/profile');
         } catch (error) {
+            console.error('Failed to update profile', error);
             setErrorMessage('Failed to update profile.');
+            setUpdateSuccess(false); // Ensure success is false on error
+
         }
         setIsLoading(false);
     };
 
+    // Return statement and the rest of your component...
+
+
+
     return (
         <>
+        
             <br/><br/><br/>
             <main className="main-content mt-3">
                 <section>
@@ -102,7 +134,8 @@ export default function EditProfile() {
                                                                        type="text" className="form-control"
                                                                        placeholder="Username"
                                                                        aria-label="Username"
-                                                                       aria-describedby="username-addon"/>
+                                                                       aria-describedby="username-addon"
+                                                                       readOnly/>
                                                             </div>
                                                             <div className="mb-3">
                                                                 <label>Email</label>
@@ -122,7 +155,7 @@ export default function EditProfile() {
                                                                 <label>Password</label>
 
                                                                 <input onChange={e => handleUserDetailsChange(e)}
-                                                                       value={userDetails.userPassword}
+                                                                       
                                                                        name={"userPassword"}
                                                                        type="password" className="form-control"
                                                                        placeholder="Password"
@@ -143,6 +176,16 @@ export default function EditProfile() {
                                                         </button>
                                                     </div>
                                                 </form>
+                                                {updateSuccess && (
+                <div className="alert alert-success" role="alert">
+                    You successfully updated your profile!
+                </div>
+            )}
+            {errorMessage && (
+                <div className="alert alert-danger" role="alert">
+                    {errorMessage}
+                </div>
+            )}
                                             </div>
                                         </div>
 

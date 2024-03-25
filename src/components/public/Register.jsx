@@ -21,6 +21,8 @@ export const Register = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [errors, setError] = useState({});
+    const [confirmPassword, setConfirmPassword] = useState('');
+
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -34,6 +36,7 @@ export const Register = () => {
         tempErrors.userName = userDetails.userName.length > 5 ? "" : "Username must be at least 6 characters long.";
         tempErrors.userEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(userDetails.userEmail) ? "" : "Email is not valid.";
         tempErrors.userPassword = userDetails.userPassword.length > 5 ? "" : "Password must be at least 6 characters long.";
+        tempErrors.confirmPassword = userDetails.userPassword === confirmPassword ? "" : "Passwords do not match.";
         setError({...tempErrors});
         return Object.values(tempErrors).every(x => x === "");
     }
@@ -132,6 +135,17 @@ export const Register = () => {
 
                                                         </div>
                                                     </div>
+                                                    <div className="mb-3">
+    <input onChange={e => setConfirmPassword(e.target.value)}
+           value={confirmPassword}
+           name="confirmPassword"
+           type="password" className="form-control"
+           placeholder="Confirm Password"
+           aria-label="Confirm Password"
+           aria-describedby="confirm-password-addon"/>
+    {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
+</div>
+
 
 
                                                 </div>
