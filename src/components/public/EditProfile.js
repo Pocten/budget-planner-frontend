@@ -3,8 +3,10 @@ import {Link, useNavigate} from "react-router-dom";
 import {CircularProgress} from "@mui/material";
 import {useState} from "react";
 import axios from "axios";
-import {UserAPIs} from "../../const/APIs";
 import { useEffect } from "react";
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import { BASE_URL } from "../../const/const";
+import { UserAPIs } from "../../const/APIs";
 
 export default function EditProfile() {
     const navigate = useNavigate();
@@ -14,10 +16,11 @@ export default function EditProfile() {
         userEmail: '',
         userPassword: '',
     });
-    const [userId, setUserId] = useState(null); // Add state to hold userId
+    const [userId, setUserId] = useState(null); 
     const [isLoading, setIsLoading] = useState(false);
-    const [jwtToken, setJwtToken] = useState(null); // State to store JWT token
-    const [updateSuccess, setUpdateSuccess] = useState(false); // State to store the success status
+    const [jwtToken, setJwtToken] = useState(null); 
+    const [updateSuccess, setUpdateSuccess] = useState(false); 
+    const [openDialog, setOpenDialog] = useState(false);
 
 
     useEffect(() => {
@@ -26,15 +29,14 @@ export default function EditProfile() {
             if (storedData) {
                 const parsedData = JSON.parse(storedData);
                 const jwtToken = parsedData.jwt;
-                //console.log("TOKEN fetch + "+jwtToken)
-                setJwtToken(jwtToken); // Store JWT token in state
+                setJwtToken(jwtToken); 
                 if (jwtToken) {
                     const base64Url = jwtToken.split('.')[1];
                     const base64 = base64Url.replace('-', '+').replace('_', '/');
                     const payload = JSON.parse(window.atob(base64));
-                    const fetchedUserId = payload.userId; // Use a temporary variable if setting state directly in async operations
+                    const fetchedUserId = payload.userId; 
 
-                    setUserId(fetchedUserId); // Store userId in state
+                    setUserId(fetchedUserId); 
 
                     try {
                         const response = await axios.get(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${fetchedUserId}`, {
@@ -65,7 +67,7 @@ export default function EditProfile() {
     const handleUpdateProfile = async (event) => {
         event.preventDefault();
         setIsLoading(true);
-        setUpdateSuccess(false); // Reset the success status on a new update attempt
+        setUpdateSuccess(false); 
         setErrorMessage('');
 
         if (!jwtToken || !userId) {
@@ -75,13 +77,10 @@ export default function EditProfile() {
         
         const updatePayload = {
             userEmail: userDetails.userEmail,
-            userPassword: userDetails.userPassword, // Consider securely handling password updates
+            userPassword: userDetails.userPassword, 
         };
 
         setIsLoading(true);
-        console.log("JWT = " + jwtToken)
-        console.log(updatePayload)
-        console.log("ENDPOINT = " + `https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}`)
         try {
             await axios.put(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}`, updatePayload, {
                 headers: {
@@ -93,14 +92,50 @@ export default function EditProfile() {
         } catch (error) {
             console.error('Failed to update profile', error);
             setErrorMessage('Failed to update profile.');
-            setUpdateSuccess(false); // Ensure success is false on error
+            setUpdateSuccess(false); 
 
         }
         setIsLoading(false);
     };
 
-    // Return statement and the rest of your component...
-
+    const handleDeleteAccount = async () => {
+        const storedData = sessionStorage.getItem('budgetPlanner-login');
+        if (!storedData) {
+            alert('Authentication error. Please log in again.');
+            return;
+        }
+    
+        const parsedData = JSON.parse(storedData);
+        const jwtToken = parsedData.jwt; 
+    
+        try {
+            const response = await axios.delete(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${jwtToken}` 
+                }
+            });
+            alert('Your account has been successfully deleted.');
+            sessionStorage.clear();            
+            window.location.href = '/';
+        } catch (error) {
+            console.error('There was an error deleting the account', error);
+            alert('Failed to delete the account. Please try again.');
+        }
+    };
+    
+      const openConfirmationDialog = () => {
+        setOpenDialog(true);
+      };
+    
+      const closeConfirmationDialog = () => {
+        setOpenDialog(false);
+      };
+    
+      const handleDialogConfirm = () => {
+        handleDeleteAccount();
+        closeConfirmationDialog();
+      };
+    
 
 
     return (
@@ -162,8 +197,35 @@ export default function EditProfile() {
                                                                        aria-label="Password"
                                                                        aria-describedby="password-addon"/>
                                                             </div>
-
                                                         </div>
+            <div className="text-center">
+                <button onClick={openConfirmationDialog} type="button"
+                        className="btn btn-danger w-100 my-4 mb-2">
+                    Delete Account
+                </button>
+            </div>
+ 
+            <Dialog
+                open={openDialog}
+                onClose={closeConfirmationDialog}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">{"Confirm Account Deletion"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Are you sure you want to delete your account? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closeConfirmationDialog} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDialogConfirm} color="secondary" autoFocus>
+                        Delete Account
+                    </Button>
+                </DialogActions>
+            </Dialog>
                                                     </div>
                                                     <div className="text-center">
                                                         <div className="text-center">
@@ -174,7 +236,10 @@ export default function EditProfile() {
                                                                 className="btn bg-gradient-dark w-100 my-4 mb-2">
                                                             {isLoading ? <CircularProgress/> : <b>Update Info</b>}
                                                         </button>
+                                                        
                                                     </div>
+                                                    {/* Dialog for confirming account deletion */}
+           
                                                 </form>
                                                 {updateSuccess && (
                 <div className="alert alert-success" role="alert">
@@ -186,10 +251,13 @@ export default function EditProfile() {
                     {errorMessage}
                 </div>
             )}
+            
                                             </div>
+                                            
                                         </div>
 
                                     </div>
+                                    
                                 </div>
                             </div>
                         </div>

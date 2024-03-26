@@ -121,6 +121,7 @@ export const Register = () => {
 
                                                         </div>
                                                     </div>
+                                                    
 
                                                     <div className="col-md-12 col-lg-6 col-sm-12">
                                                         <div className="mb-3">
@@ -135,19 +136,17 @@ export const Register = () => {
 
                                                         </div>
                                                     </div>
+                                                    <div className="col-md-12 col-lg-6 col-sm-12">
                                                     <div className="mb-3">
-    <input onChange={e => setConfirmPassword(e.target.value)}
-           value={confirmPassword}
-           name="confirmPassword"
-           type="password" className="form-control"
-           placeholder="Confirm Password"
-           aria-label="Confirm Password"
-           aria-describedby="confirm-password-addon"/>
-    {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
-</div>
-
-
-
+        <input onChange={e => setConfirmPassword(e.target.value)}
+               value={confirmPassword}
+               type="password" className="form-control"
+               placeholder="Confirm Password"
+               aria-label="Confirm Password"
+               aria-describedby="confirm-password-addon"/>
+        {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
+    </div>
+    </div>
                                                 </div>
                                                 <div className="text-center">
                                                     <button onClick={(e) => handleRegisterSubmit(e)} type="button"
