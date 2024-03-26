@@ -1,22 +1,49 @@
 /* Adding CSS manually is only necessary in JSFiddle,
    where CSS can't be inserted into the <head> */
-.typed-cursor{
+
+.typed-cursor {
     opacity: 1;
     animation: typedjsBlink 0.7s infinite;
     -webkit-animation: typedjsBlink 0.7s infinite;
     animation: typedjsBlink 0.7s infinite;
 }
-@keyframes typedjsBlink{
-    50% { opacity: 0.0; }
+
+@keyframes typedjsBlink {
+    50% {
+        opacity: 0.0;
+    }
 }
-@-webkit-keyframes typedjsBlink{
-    0% { opacity: 1; }
-    50% { opacity: 0.0; }
-    100% { opacity: 1; }
+
+@-webkit-keyframes typedjsBlink {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.0;
+    }
+    100% {
+        opacity: 1;
+    }
 }
-.typed-fade-out{
+
+.typed-fade-out {
     opacity: 0;
     transition: opacity .25s;
     -webkit-animation: 0;
     animation: 0;
+}
+
+.card {
+    max-width: 400px;
+    /* This will make the form narrower */
+    padding: 2rem;
+    /* This increases padding to make it more square */
+    margin: 2rem auto;
+    /* This centers the card in the parent container */
+    border-radius: 10px;
+    /* Optional: if you want rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Optional: adds a subtle shadow for depth */
+    background: white;
+    /* Ensures the background is white */
 }

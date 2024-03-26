@@ -33,7 +33,7 @@ export const Register = () => {
 
     const validate = () => {
         let tempErrors = {};
-        tempErrors.userName = userDetails.userName.length > 5 ? "" : "Username must be at least 6 characters long.";
+        tempErrors.userName = userDetails.userName.length > 3 ? "" : "Username must be at least 4 characters long.";
         tempErrors.userEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(userDetails.userEmail) ? "" : "Email is not valid.";
         tempErrors.userPassword = userDetails.userPassword.length > 5 ? "" : "Password must be at least 6 characters long.";
         tempErrors.confirmPassword = userDetails.userPassword === confirmPassword ? "" : "Passwords do not match.";
@@ -75,9 +75,8 @@ export const Register = () => {
 
     return (
         <>
-
-            <div className="ms-4 mt-7">
-                <div className="container ms-20">
+            <div className="main-content  mt-0">
+                <div className="container ms-40">
                     <div>
                         <section className="min-vh-100 mb-8">
                             <div className="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg"
@@ -85,7 +84,7 @@ export const Register = () => {
                                 <span className="mask bg-gradient-dark opacity-6"/>
                                 <div className="container">
                                     <div className="row justify-content-center">
-                                        <div className="col-lg-5 text-center mx-auto">
+                                        <div className="col-md-6 col-lg-4 text-center mx-auto">
                                             <h1 className="text-white mb-2 mt-5">Welcome!</h1>
                                             <p className="text-lead text-white">Please Enter your details to signup for
                                                 Budget Planner</p>
