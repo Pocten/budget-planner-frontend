@@ -70,6 +70,8 @@ export const Register = () => {
         })}
     }
 
+   
+
 
     return (
         <>
@@ -94,50 +96,40 @@ export const Register = () => {
 
                                         <div className="card-body">
                                             <form>
-                                                <div className="row">
-                                                    <div className="col-md-12 col-lg-6 col-sm-12">
-                                                        <div className="mb-3">
-                                                            <input onChange={e => handleUserDetails(e)}
-                                                                   value={userDetails.userName} name={'userName'}
-                                                                   type="text" className="form-control"
-                                                                   placeholder="User Name"
-                                                                   aria-label="User name"
-                                                                   aria-describedby="user-name-addon"/>
-                                                            {errors.userName && <div className="error-message">{errors.userName}</div>}
+                                            <div className="row">
+    <div className="col-12 mb-3">
+        <input onChange={e => handleUserDetails(e)}
+               value={userDetails.userName} name={'userName'}
+               type="text" className="form-control"
+               placeholder="User Name"
+               aria-label="User name"
+               aria-describedby="user-name-addon"/>
+        {errors.userName && <div className="error-message">{errors.userName}</div>}
+    </div>
 
-                                                        </div>
+    <div className="col-12 mb-3">
+        <input onChange={e => handleUserDetails(e)}
+               value={userDetails.userEmail}
+               name={"userEmail"}
+               type="email" className="form-control"
+               placeholder="Email"
+               aria-label="Email"
+               aria-describedby="email-addon"/>
+        {errors.userEmail && <div className="error-message">{errors.userEmail}</div>}
+    </div>
 
-                                                    </div>
-                                                    <div className="col-md-12 col-lg-6 col-sm-12">
-                                                        <div className="mb-3">
-                                                            <input onChange={e => handleUserDetails(e)}
-                                                                   value={userDetails.userPassword}
-                                                                   name={"userPassword"}
-                                                                   type="password" className="form-control"
-                                                                   placeholder="Password"
-                                                                   aria-label="Password"
-                                                                   aria-describedby="password-addon"/>
-                                                            {errors.userPassword && <div className="error-message">{errors.userPassword}</div>}
+    <div className="col-12 mb-3">
+        <input onChange={e => handleUserDetails(e)}
+               value={userDetails.userPassword}
+               name={"userPassword"}
+               type="password" className="form-control"
+               placeholder="Password"
+               aria-label="Password"
+               aria-describedby="password-addon"/>
+        {errors.userPassword && <div className="error-message">{errors.userPassword}</div>}
+    </div>
 
-                                                        </div>
-                                                    </div>
-                                                    
-
-                                                    <div className="col-md-12 col-lg-6 col-sm-12">
-                                                        <div className="mb-3">
-                                                            <input onChange={e => handleUserDetails(e)}
-                                                                   value={userDetails.userEmail}
-                                                                   name={"userEmail"}
-                                                                   type="email" className="form-control"
-                                                                   placeholder="Email"
-                                                                   aria-label="Email"
-                                                                   aria-describedby="email-addon"/>
-                                                            {errors.userEmail && <div className="error-message">{errors.userEmail}</div>}
-
-                                                        </div>
-                                                    </div>
-                                                    <div className="col-md-12 col-lg-6 col-sm-12">
-                                                    <div className="mb-3">
+    <div className="col-12 mb-3">
         <input onChange={e => setConfirmPassword(e.target.value)}
                value={confirmPassword}
                type="password" className="form-control"
@@ -146,8 +138,7 @@ export const Register = () => {
                aria-describedby="confirm-password-addon"/>
         {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
     </div>
-    </div>
-                                                </div>
+</div>
                                                 <div className="text-center">
                                                     <button onClick={(e) => handleRegisterSubmit(e)} type="button"
                                                             className="btn bg-gradient-dark w-100 my-4 mb-2">
