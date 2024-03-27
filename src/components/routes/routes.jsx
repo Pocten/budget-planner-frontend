@@ -6,6 +6,8 @@ import {ErrorPage} from "../public/error/404";
 import {AboutUs} from "../public/AboutUs";
 import {ContactMe} from "../contact/ContactMe";
 import EditProfile from "../public/EditProfile";
+import Dashboard from "../public/Dashboard";
+import ListDashboards from "../public/ListDashboards";
 
 export const routesBeforeLogin = () => {
     return <Routes>
@@ -21,8 +23,12 @@ export const routesAfterLogin = () => {
         <Route path={"/home"} element={<Welcome/>}/>
         <Route path={"*"} element={<ErrorPage/>}/>
         <Route path={"/profile"} element={<EditProfile/>}/>
+        <Route path={"/dashboards"} element={<ListDashboards/>}/>
+        <Route path="/dashboard/:dashboardId" element={<Dashboard />} />
+
         <Route path={"/contact"} element={<ContactMe/>}/>
         <Route path={"/about-us"} element={<AboutUs/>}/>
         <Route path={"/edit-profile"} element={<EditProfile/>}/>
+
     </Routes>;
 }

@@ -2657,7 +2657,7 @@ textarea.form-control-lg {
     background-size: contain;
     border: none;
     appearance: none;
-    color-adjust: exact;
+    print-color-adjust: exact;
     transition: background-color 0.25s ease, border-color 0.25s ease, background-position 0.15s ease-in-out, opacity 0.15s ease-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -3252,7 +3252,7 @@ textarea.form-control.is-invalid {
 }
 
 .btn:hover {
-    color: #67748e;
+    color: #fff;
 }
 
 .btn-check:focus+.btn,
@@ -3270,22 +3270,22 @@ fieldset:disabled .btn {
 
 .btn-primary {
     color: #fff;
-    background-color: #cb0c9f;
-    border-color: #cb0c9f;
+    background-color: #343a40;
+    border-color: #343a40;
 }
 
 .btn-primary:hover {
     color: #fff;
-    background-color: #ad0a87;
-    border-color: #a20a7f;
+    background-color: #343a40;
+    border-color: #343a40;
 }
 
 .btn-check:focus+.btn-primary,
 .btn-primary:focus {
     color: #fff;
-    background-color: #ad0a87;
-    border-color: #a20a7f;
-    box-shadow: 0 0 0 0.2rem rgba(211, 48, 173, 0.5);
+    background-color: #15171a;
+    border-color: #15171a;
+    box-shadow: 0 0 0 0.2rem rgba(42, 41, 51, 0.5);
 }
 
 .btn-check:checked+.btn-primary,
@@ -3294,8 +3294,8 @@ fieldset:disabled .btn {
 .btn-primary.active,
 .show>.btn-primary.dropdown-toggle {
     color: #fff;
-    background-color: #a20a7f;
-    border-color: #980977;
+    background-color: #15171a;
+    border-color: #15171a;
 }
 
 .btn-check:checked+.btn-primary:focus,
@@ -3309,8 +3309,8 @@ fieldset:disabled .btn {
 .btn-primary:disabled,
 .btn-primary.disabled {
     color: #fff;
-    background-color: #cb0c9f;
-    border-color: #cb0c9f;
+    background-color: #343a40;
+    border-color: #343a40;
 }
 
 .btn-secondary {
@@ -3674,14 +3674,14 @@ fieldset:disabled .btn {
 }
 
 .btn-outline-primary {
-    color: #cb0c9f;
-    border-color: #cb0c9f;
+    color: #2a3952;
+    border-color: #2a3952;
 }
 
 .btn-outline-primary:hover {
     color: #fff;
-    background-color: #cb0c9f;
-    border-color: #cb0c9f;
+    background-color: #2a3952;
+    border-color: #2a523b;
 }
 
 .btn-check:focus+.btn-outline-primary,
@@ -3695,8 +3695,8 @@ fieldset:disabled .btn {
 .btn-outline-primary.active,
 .btn-outline-primary.dropdown-toggle.show {
     color: #fff;
-    background-color: #cb0c9f;
-    border-color: #cb0c9f;
+    background-color: #2a3952;
+    border-color: #2a3952;
 }
 
 .btn-check:checked+.btn-outline-primary:focus,
@@ -3709,7 +3709,7 @@ fieldset:disabled .btn {
 
 .btn-outline-primary:disabled,
 .btn-outline-primary.disabled {
-    color: #cb0c9f;
+    color: #2a3952;
     background-color: transparent;
 }
 
@@ -16415,7 +16415,7 @@ fieldset:disabled .btn {
 }
 
 .badge.bg-primary {
-    background: #cb0c9f;
+    background: #343a40;
 }
 
 .badge.bg-secondary {
@@ -16562,8 +16562,8 @@ fieldset:disabled .btn {
 
 .btn-primary:hover,
 .btn.bg-gradient-primary:hover {
-    background-color: #cb0c9f;
-    border-color: #cb0c9f;
+    background-color: #830866;
+    border-color: #0e456d;
 }
 
 .btn-primary .btn.bg-outline-primary,
@@ -18277,7 +18277,7 @@ hr.horizontal.gray-light {
         animation-fill-mode: both;
         animation-duration: 1.5s;
         transform: scale(0.6);
-        background: #fff;
+        background: #343a40;
         left: 18% !important;
         position: absolute;
     }
@@ -22461,6 +22461,20 @@ pre[class*="language-"] {
 }
 
 
+/* The sidebar default style */
+
+
+/* Style for the hamburger menu button */
+
+
+/* Adjust the .nav-link padding or margin if needed */
+
+.nav-link {
+    padding: 10px 15px;
+    /* Adjust padding as needed */
+}
+
+
 /* MS supports */
 
 @supports (-ms-overflow-style: none) {
@@ -22481,12 +22495,3 @@ pre[class*="language-"] {
 
 
 /* style.css */
-
-.card {
-    max-width: 400px;
-    padding: 2rem;
-    margin: 2rem auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background: white;
-}
