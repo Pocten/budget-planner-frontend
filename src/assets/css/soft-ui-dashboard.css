@@ -4617,6 +4617,8 @@ fieldset:disabled .btn {
     background: none;
     border: 0;
     border-radius: 0.75rem;
+    margin-top: 70px;
+    height: 70px;
 }
 
 .nav-pills .nav-link.active,
@@ -4710,6 +4712,42 @@ fieldset:disabled .btn {
     flex-basis: 100%;
     flex-grow: 1;
     align-items: center;
+}
+
+
+/* Assuming your first navbar has an ID of `firstNavbar` */
+
+#secondNavbar.pushed-down {
+    margin-top: 50px;
+    /* Add space at the top of the second navbar */
+    transition: margin-top 0.3s ease-in-out;
+    /* Smooth transition for the margin */
+}
+
+
+/* Assuming your second navbar has an ID of `secondNavbar` */
+
+
+/* When firstNavbar is expanded, push down secondNavbar */
+
+
+/* When firstNavbar is not collapsed, apply the transformation */
+
+#mainNavbarCollapse:show+#secondNavbar {
+    margin-top: 100px;
+    /* Add space at the top of the second navbar */
+    transition: margin-top 0.3s ease-in-out;
+    /* Smooth transition for the margin */
+}
+
+.navbar-toggler-first {
+    padding: 0.25rem 0.75rem;
+    font-size: 1.125rem;
+    line-height: 1;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    transition: box-shadow 0.15s ease-in-out;
 }
 
 .navbar-toggler {

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+import { Outlet } from 'react-router-dom';
+import { DashboardNavbar } from '../navbar/DashboardNavbar';
 export default function Dashboard() {
     const { dashboardId } = useParams();
     const navigate = useNavigate();
     const [dashboard, setDashboard] = useState(null);
-
 
     useEffect(() => {
         const jwtToken = sessionStorage.getItem('budgetPlanner-login')
@@ -42,9 +42,10 @@ export default function Dashboard() {
     }
 
     return (
-        <div>
-     
-        </div>
-      );
+        <>
+      <DashboardNavbar />
+      <Outlet /> {/* This will render the matched nested route */}
+    </>
+    );
     };
     
