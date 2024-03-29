@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { CircularProgress, Button, Alert, Container, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import {DashboardAPIs} from "../../const/APIs";
+
 
 export default function ListDashboards() {
     const [dashboards, setDashboards] = useState([]);
@@ -23,7 +25,7 @@ export default function ListDashboards() {
         }
 
         try {
-            const response = await axios.get(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}/dashboards`, {
+            const response = await axios.get(DashboardAPIs.getAllDashboardsByUserId, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },
@@ -63,7 +65,7 @@ export default function ListDashboards() {
         }
 
         try {
-            await axios.post(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}/dashboards`, newDashboard, {
+            await axios.post(DashboardAPIs.create, newDashboard, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },

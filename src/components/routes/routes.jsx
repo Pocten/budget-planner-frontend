@@ -6,8 +6,8 @@ import {ErrorPage} from "../public/error/404";
 import {AboutUs} from "../public/AboutUs";
 import {ContactMe} from "../contact/ContactMe";
 import EditProfile from "../public/EditProfile";
-import Dashboard from "../public/Dashboard";
-import ListDashboards from "../public/ListDashboards";
+import Dashboard from "../dashboards/Dashboard";
+import ListDashboards from "../dashboards/ListDashboards";
 import {DashboardNavbar} from "../navbar/DashboardNavbar";
 
 export const routesBeforeLogin = () => {

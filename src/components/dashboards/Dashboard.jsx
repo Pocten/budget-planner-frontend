@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Outlet } from 'react-router-dom';
 import { DashboardNavbar } from '../navbar/DashboardNavbar';
+import {DashboardAPIs} from "../../const/APIs";
+
 export default function Dashboard() {
     const { dashboardId } = useParams();
     const navigate = useNavigate();
@@ -22,7 +24,7 @@ export default function Dashboard() {
 
         const fetchDashboards = async () => {
             try {
-                const response = await axios.get(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}/dashboards/${dashboardId}`, {
+                const response = await axios.get(DashboardAPIs.getUserDashboardById, {
                     headers: {
                         Authorization: `Bearer ${jwtToken}`,
                     },
