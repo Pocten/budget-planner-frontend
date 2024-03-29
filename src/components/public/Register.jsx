@@ -34,7 +34,7 @@ export const Register = () => {
     const validate = () => {
         let tempErrors = {};
         tempErrors.userName = userDetails.userName.length > 3 ? "" : "Username must be at least 4 characters long.";
-        tempErrors.userEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(userDetails.userEmail) ? "" : "Email is not valid.";
+        tempErrors.userEmail = /^[\w]+@([\w-]+\.)+[\w-]{2,4}$/.test(userDetails.userEmail) ? "" : "Email is not valid.";
         tempErrors.userPassword = userDetails.userPassword.length > 5 ? "" : "Password must be at least 6 characters long.";
         tempErrors.confirmPassword = userDetails.userPassword === confirmPassword ? "" : "Passwords do not match.";
         setError({...tempErrors});

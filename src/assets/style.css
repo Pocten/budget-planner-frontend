@@ -32,18 +32,3 @@
     -webkit-animation: 0;
     animation: 0;
 }
-
-.card {
-    max-width: 400px;
-    /* This will make the form narrower */
-    padding: 2rem;
-    /* This increases padding to make it more square */
-    margin: 2rem auto;
-    /* This centers the card in the parent container */
-    border-radius: 10px;
-    /* Optional: if you want rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    /* Optional: adds a subtle shadow for depth */
-    background: white;
-    /* Ensures the background is white */
-}

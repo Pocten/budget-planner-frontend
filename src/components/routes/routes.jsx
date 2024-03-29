@@ -8,7 +8,8 @@ import {ContactMe} from "../contact/ContactMe";
 import EditProfile from "../public/EditProfile";
 import Dashboard from "../dashboards/Dashboard";
 import ListDashboards from "../dashboards/ListDashboards";
-import {DashboardNavbar} from "../navbar/DashboardNavbar";
+import {DashboardNavbar} from '../navbar/DashboardNavbar';
+import MyStatistics from "../dashboards/MyStatistics";
 
 export const routesBeforeLogin = () => {
     return <Routes>
@@ -30,6 +31,6 @@ export const routesAfterLogin = () => {
         <Route path={"/contact"} element={<ContactMe/>}/>
         <Route path={"/about-us"} element={<AboutUs/>}/>
         <Route path={"/edit-profile"} element={<EditProfile/>}/>
-
+        <Route path="/dashboard/:dashboardId/my-statistics" element={<MyStatistics />} />
     </Routes>;
 }

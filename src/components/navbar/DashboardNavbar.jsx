@@ -3,11 +3,13 @@ import '../../assets/css/nucleo-icons.css'
 import '../../assets/css/nucleo-svg.css'
 import '../../assets/css/soft-ui-dashboard.css?v=1.0.3'
 import {Link} from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 export const DashboardNavbar = () => {
+    const { dashboardId } = useParams();
 
   return (
     <>
@@ -33,13 +35,13 @@ export const DashboardNavbar = () => {
                                                 className="nav-link font-weight-bolder d-flex align-items-center me-2 active"
                                                 aria-current="page">
                                                 <i className="fa fa-chart-pie opacity-6 text-dark me-1"/>
-                                                <Link to={"/about-us"}><AttachMoneyIcon/>My expanses</Link>
+                                                <Link to={`/dashboard/${dashboardId}`}><AttachMoneyIcon/>My expenses</Link>
                                             </span>
                                         </li>
                                         <li className="nav-item">
                                             <span className="nav-link me-2 font-weight-bolder">
                                                 <i className="fa fa-user opacity-6 text-dark me-1"/>
-                                                <Link to={"/dashboards"}><StackedLineChartIcon/> My statistics </Link>
+                                                <Link to={`/dashboard/${dashboardId}/my-statistics`}><StackedLineChartIcon/> My statistics </Link>
                                             </span>
                                         </li>
                                         <li className="nav-item">

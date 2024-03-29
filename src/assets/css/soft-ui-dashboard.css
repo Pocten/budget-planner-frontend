@@ -4717,13 +4717,6 @@ fieldset:disabled .btn {
 
 /* Assuming your first navbar has an ID of `firstNavbar` */
 
-#secondNavbar.pushed-down {
-    margin-top: 50px;
-    /* Add space at the top of the second navbar */
-    transition: margin-top 0.3s ease-in-out;
-    /* Smooth transition for the margin */
-}
-
 
 /* Assuming your second navbar has an ID of `secondNavbar` */
 
