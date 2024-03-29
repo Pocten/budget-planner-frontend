@@ -25,7 +25,7 @@ export default function ListDashboards() {
         }
 
         try {
-            const response = await axios.get(DashboardAPIs.getAllDashboardsByUserId, {
+            const response = await axios.get(DashboardAPIs.getAllDashboardsByUserId(userId), {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },
@@ -65,7 +65,7 @@ export default function ListDashboards() {
         }
 
         try {
-            await axios.post(DashboardAPIs.create, newDashboard, {
+            await axios.post(DashboardAPIs.create(userId), newDashboard, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },

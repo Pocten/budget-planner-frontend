@@ -24,7 +24,7 @@ export default function Dashboard() {
 
         const fetchDashboards = async () => {
             try {
-                const response = await axios.get(DashboardAPIs.getUserDashboardById, {
+                const response = await axios.get(DashboardAPIs.getUserDashboardById(userId, dashboardId), {
                     headers: {
                         Authorization: `Bearer ${jwtToken}`,
                     },

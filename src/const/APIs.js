@@ -8,9 +8,9 @@ export const UserAPIs = {
 }
 
 export const DashboardAPIs = {
-    create: `${BASE_URL}/v1/users/{userId}/dashboards`,
-    getAllDashboardsByUserId: `${BASE_URL}/v1/users/{userId}/dashboards`,
-    getUserDashboardById: `${BASE_URL}/v1/users/{userId}/dashboards/{dashboardId}`,
-    update: `${BASE_URL}/v1/users/{userId}/dashboards/{dashboardId}`,
-    delete: `${BASE_URL}/v1/dashboards`,
+    create: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards`,
+    getAllDashboardsByUserId: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards`,
+    getUserDashboardById: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,
+    update: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,
+    delete: () => `${BASE_URL}/v1/dashboards`,
 }
