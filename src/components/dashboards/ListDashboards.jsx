@@ -78,6 +78,7 @@ export default function ListDashboards() {
         }
     };
 
+    console.log("TOKEN IS " +jwtToken)
     return (
       <Container className="mt-5">
         {isLoading ? (

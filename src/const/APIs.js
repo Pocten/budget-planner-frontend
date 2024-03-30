@@ -1,5 +1,5 @@
 // Mess Menu APIs
-import {BASE_URL} from "./const";
+import { BASE_URL } from "./const";
 
 export const UserAPIs = {
     register: `${BASE_URL}/auth/register`,
@@ -13,4 +13,6 @@ export const DashboardAPIs = {
     getUserDashboardById: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,
     update: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,
     delete: () => `${BASE_URL}/v1/dashboards`,
+    getUserFinancialRecordsByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-records`,
+
 }

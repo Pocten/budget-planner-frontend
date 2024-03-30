@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Outlet } from 'react-router-dom';
 import { DashboardNavbar } from '../navbar/DashboardNavbar';
-import {DashboardAPIs} from "../../const/APIs";
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -15,144 +14,176 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-
-
+import {DashboardAPIs} from "../../const/APIs";
+import {
+  CircularProgress,
+  Container,
+  Typography,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button
+} from '@mui/material';
 
 export default function Dashboard() {
-    const { dashboardId } = useParams();
     const navigate = useNavigate();
-    const [dashboard, setDashboard] = useState(null);
-    const [selectedMonth, setSelectedMonth] = useState(
-      localStorage.getItem('selectedMonth') || ''
-    );
-    const [selectedCategory, setSelectedCategory] = useState(
-      localStorage.getItem('selectedCategory') || ''
-    );
+    const { dashboardId } = useParams();
+    const [isLoading, setIsLoading] = useState(true);
+    const [financialRecords, setFinancialRecords] = useState([]);
+    const [openCreateForm, setOpenCreateForm] = useState(false);
+    const [newRecord, setNewRecord] = useState({
+        amount: '',
+        categoryId: '',
+        type: '',
+        description: ''
+    });
+    const [selectedMonth, setSelectedMonth] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
 
 
-    const rows = [
-      {
-        id: 1,
-        date: '2024-03-29',
-        title: 'Grocery Shopping',
-        amount: 150.00,
-        description: 'Weekly groceries',
-        category: 'Food',
-        tag: 'Essentials'
-      },
-      // Add more rows as needed
-    ];
-    const handleMonthChange = (event) => {
-      const newMonth = event.target.value;
-      setSelectedMonth(newMonth);
-      localStorage.setItem('selectedMonth', newMonth);
-  };
-  
-  const handleCategoryChange = (event) => {
-      const newCategory = event.target.value;
-      setSelectedCategory(newCategory);
-      localStorage.setItem('selectedCategory', newCategory);
-  };
 
-const filteredRows = rows.filter(row => {
-  const dateMatch = selectedMonth
-    ? new Date(row.date).getMonth() === selectedMonth - 1
-    : true;
-  const categoryMatch = selectedCategory ? row.category === selectedCategory : true;
-  return dateMatch && categoryMatch;
-});
+    //define jwt token
+    const jwtToken = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(sessionStorage.getItem('budgetPlanner-login')).jwt : null;
 
+    //
     useEffect(() => {
-        const jwtToken = sessionStorage.getItem('budgetPlanner-login')
-            ? JSON.parse(sessionStorage.getItem('budgetPlanner-login')).jwt
-            : null;
-        
-        if (!jwtToken) {
-            navigate('/login'); // Redirect to login if there is no token
+        if (!dashboardId || !jwtToken) {
+            navigate('/login');
             return;
         }
-        
-        const userId = JSON.parse(window.atob(jwtToken.split('.')[1])).userId;
-
-        const fetchDashboards = async () => {
+        const fetchFinancialRecords = async () => {
+            setIsLoading(true);
             try {
-                const response = await axios.get(DashboardAPIs.getUserDashboardById(userId, dashboardId), {
-                    headers: {
-                        Authorization: `Bearer ${jwtToken}`,
-                    },
+                const response = await axios.get(DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId), {
+                    headers: { Authorization: `Bearer ${jwtToken}` }
                 });
-                setDashboard(response.data);
+                setFinancialRecords(response.data);
             } catch (error) {
-                console.error("Failed to fetch dashboard data", error);
+                console.error('Error fetching financial records', error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        fetchDashboards();
-    }, [dashboardId, navigate]);
+        fetchFinancialRecords();
+    }, [dashboardId, jwtToken, navigate]);
 
-    if (!dashboard) {
-        return <div>Loading dashboard details...</div>; // Loading state
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewRecord(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
+
+    const handleMonthChange = (event) => {
+      setSelectedMonth(event.target.value);
+  };
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+};
+
+const filteredRecords = financialRecords.filter(record => {
+  const dateMatch = selectedMonth ? new Date(record.date).getMonth() === parseInt(selectedMonth, 10) - 1 : true;
+  const categoryMatch = selectedCategory ? record.category === selectedCategory : true;
+  return dateMatch && categoryMatch;
+});
+
+
+    const handleCreateFormOpen = () => {
+        setOpenCreateForm(true);
+    };
+
+    const handleCreateFormClose = () => {
+        setOpenCreateForm(false);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!jwtToken) {
+            console.error("Authentication error: No JWT Token found.");
+            return;
+        }
+
+        try {
+          const response = await axios.post(DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId), newRecord, {
+            headers: { Authorization: `Bearer ${jwtToken}` }
+            });
+            const createdRecord = response.data;
+
+            setFinancialRecords(prevRecords => [...prevRecords, createdRecord]);
+            handleCreateFormClose();
+            setNewRecord({ amount: '', categoryId: '', type: '', description: '' });
+        } catch (error) {
+            console.error('Error creating financial record', error);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <Container style={{ display: 'flex', justifyContent: 'center', marginTop: '150px' }}>
+                <CircularProgress />
+            </Container>
+        );
     }
 
     return (
       <>
         <DashboardNavbar />
-        <FormControl
-          style={{ marginTop: "150px", marginLeft: "20px", minWidth: 120 }}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "20px",
+            marginTop: "150px",
+          }}
         >
-          <InputLabel id="month-select-label">Month</InputLabel>
-          <Select
-            labelId="month-select-label"
-            id="month-select"
-            value={selectedMonth}
-            label="Month"
-            onChange={handleMonthChange}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={1}>January</MenuItem>
-            <MenuItem value={2}>February</MenuItem>
-            <MenuItem value={3}>March</MenuItem>
-            <MenuItem value={4}>April</MenuItem>
-            <MenuItem value={5}>May</MenuItem>
-            <MenuItem value={6}>June</MenuItem>
-            <MenuItem value={7}>July</MenuItem>
-            <MenuItem value={8}>August</MenuItem>
-            <MenuItem value={9}>September</MenuItem>
-            <MenuItem value={10}>October</MenuItem>
-            <MenuItem value={11}>November</MenuItem>
-            <MenuItem value={12}>December</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl
-          style={{ marginTop: "150px", marginLeft: "20px", minWidth: 120 }}
-        >
-          <InputLabel id="category-select-label">Category</InputLabel>
-          <Select
-            labelId="category-select-label"
-            id="category-select"
-            value={selectedCategory}
-            label="Category"
-            onChange={handleCategoryChange}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value="Food">Food</MenuItem>
-            <MenuItem value="Living">Living</MenuItem>
-            <MenuItem value="Clothes">Clothes</MenuItem>
-            <MenuItem value="Drug">Drug</MenuItem>
-            <MenuItem value="Other">Other</MenuItem>
-          </Select>
-        </FormControl>
-        <Paper style={{ width: "100%", overflow: "hidden", marginTop: "20px" }}>
-          <TableContainer component={Paper}>
+          <FormControl style={{ marginRight: "20px" }}>
+            <InputLabel id="month-select-label">Month</InputLabel>
+            <Select
+              labelId="month-select-label"
+              id="month-select"
+              value={selectedMonth}
+              onChange={handleMonthChange}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {[...Array(12).keys()].map((month) => (
+                <MenuItem key={month + 1} value={month + 1}>
+                  {new Date(0, month).toLocaleString("en", { month: "long" })}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl>
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              value={selectedCategory}
+              onChange={handleCategoryChange}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value="Food">Food</MenuItem>
+              <MenuItem value="Living">Living</MenuItem>
+              <MenuItem value="Clothes">Clothes</MenuItem>
+              <MenuItem value="Drug">Drug</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        <Paper style={{ width: "100%", overflow: "hidden" }}>
+        <TableContainer component={Paper} style={{ maxHeight: '50vh', overflow: 'auto' }}>
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
                   <TableCell>Date</TableCell>
-                  <TableCell>Title</TableCell>
                   <TableCell>Amount</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Category</TableCell>
@@ -160,22 +191,69 @@ const filteredRows = rows.filter(row => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredRows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.date}</TableCell>
-                    <TableCell>{row.title}</TableCell>
-                    <TableCell>${row.amount.toFixed(2)}</TableCell>
-                    <TableCell>{row.description}</TableCell>
-                    <TableCell>{row.category}</TableCell>
-                    <TableCell>{row.tag}</TableCell>
+                {filteredRecords.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell>{record.date}</TableCell>
+                    <TableCell>${record.amount.toFixed(2)}</TableCell>
+                    <TableCell>{record.description}</TableCell>
+                    <TableCell>{record.categoryId}</TableCell>
+                    <TableCell>{record.tag}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
         </Paper>
-        <Outlet /> {/* This will render the matched nested route */}
+        
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            display: "flex",
+            justifyContent: "space-around",
+            alignItems: "flex-end",
+            margin: "10px",
+          }}
+        >
+          <TextField
+            name="amount"
+            label="Amount"
+            type="number"
+            value={newRecord.amount}
+            onChange={handleInputChange}
+            style={{ width: "15%", marginRight: "10px" , height:"20px"}} // You can adjust the width as needed
+          />
+          <TextField
+            name="category"
+            label="Category"
+            value={newRecord.categoryId}
+            onChange={handleInputChange}
+            style={{ width: "15%", marginRight: "10px", height:"20px"}} // Adjust the width as needed
+          />
+          <FormControl style={{ width: "15%", marginRight: "10px" , height:"20px" }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              name="type"
+              value={newRecord.type}
+              label="Type"
+              onChange={handleInputChange}
+            >
+              <MenuItem value="INCOME">INCOME</MenuItem>
+              <MenuItem value="EXPENSE">EXPENSE</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            name="description"
+            label="Description"
+            value={newRecord.description}
+            onChange={handleInputChange}
+            rows={4}
+            style={{ width: "20%" , height:"20px"}} // Adjust the width as needed
+          />
+          <Button type="submit" variant="contained" style={{ width: "10%" , height:"60px", marginTop: "10px"}}>
+            Submit
+          </Button>
+        </form>
+        <Outlet /> 
       </>
     );
-    };
-    
+}
