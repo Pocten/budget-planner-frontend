@@ -223,7 +223,7 @@ const filteredRecords = financialRecords.filter(record => {
             style={{ width: "15%", marginRight: "10px" , height:"20px"}} // You can adjust the width as needed
           />
           <TextField
-            name="category"
+            name="categoryId"
             label="Category"
             value={newRecord.categoryId}
             onChange={handleInputChange}
