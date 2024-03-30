@@ -14,5 +14,6 @@ export const DashboardAPIs = {
     update: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,
     delete: () => `${BASE_URL}/v1/dashboards`,
     getUserFinancialRecordsByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-records`,
+    getFinancialRecordById: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-records/${id}`,
 
 }

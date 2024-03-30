@@ -18,21 +18,17 @@ import {DashboardAPIs} from "../../const/APIs";
 import {
   CircularProgress,
   Container,
-  Typography,
   TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Button
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const { dashboardId } = useParams();
     const [isLoading, setIsLoading] = useState(true);
     const [financialRecords, setFinancialRecords] = useState([]);
-    const [openCreateForm, setOpenCreateForm] = useState(false);
     const [newRecord, setNewRecord] = useState({
         amount: '',
         categoryId: '',
@@ -41,13 +37,14 @@ export default function Dashboard() {
     });
     const [selectedMonth, setSelectedMonth] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-
-
+    const [editingId, setEditingId] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+    const [openCreateForm, setOpenCreateForm] = useState(false);
 
     //define jwt token
     const jwtToken = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(sessionStorage.getItem('budgetPlanner-login')).jwt : null;
 
-    //
+  
     useEffect(() => {
         if (!dashboardId || !jwtToken) {
             navigate('/login');
@@ -93,10 +90,6 @@ const filteredRecords = financialRecords.filter(record => {
 });
 
 
-    const handleCreateFormOpen = () => {
-        setOpenCreateForm(true);
-    };
-
     const handleCreateFormClose = () => {
         setOpenCreateForm(false);
     };
@@ -130,6 +123,84 @@ const filteredRecords = financialRecords.filter(record => {
         );
     }
 
+    const handleDeleteRecord = async (recordId) => {
+      if (!jwtToken) {
+          console.error("Authentication error: No JWT Token found.");
+          return;
+      }
+  
+      try {
+          await axios.delete(DashboardAPIs.getFinancialRecordById(dashboardId, recordId), {
+              headers: { Authorization: `Bearer ${jwtToken}` },
+          });
+  
+          setFinancialRecords(prevRecords => prevRecords.filter(record => record.id !== recordId));
+      } catch (error) {
+          console.error('Error deleting financial record', error);
+      }
+  };
+  
+
+
+
+  const handleEditClick = (record) => {
+    setEditingId(record.id);
+    setEditFormData({
+      amount: record.amount,
+      description: record.description,
+    });
+  };
+
+
+  const handleEditInputChange = (event) => {
+    const { name, value } = event.target;
+    setEditFormData({
+      ...editFormData,
+      [name]: value,
+    });
+  };
+  
+  
+const handleSave = async (id) => {
+  if (!jwtToken) {
+    console.error("Authentication error: No JWT Token found.");
+    return;
+  }
+
+  try {
+    const response = await axios.put(
+      DashboardAPIs.getFinancialRecordById(dashboardId, id),
+      editFormData,
+      {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      }
+    );
+    const updatedRecord = response.data;
+    setFinancialRecords((prevRecords) =>
+      prevRecords.map((record) => 
+        record.id === id ? updatedRecord : record
+      )
+    );
+    setEditingId(null);
+    setEditFormData({});
+  } catch (error) {
+    console.error('Error updating financial record', error);
+  }
+};
+  
+const handleBlur = () => {
+  handleSave(editingId);
+};
+
+const handleKeyPress = (event) => {
+  if (event.key === 'Enter') {
+    handleSave(editingId);
+  }
+};
+
+  
+
+
     return (
       <>
         <DashboardNavbar />
@@ -141,7 +212,7 @@ const filteredRecords = financialRecords.filter(record => {
             marginTop: "150px",
           }}
         >
-          <FormControl style={{ marginRight: "20px" }}>
+          <FormControl style={{ marginRight: "20px", width: "90px" }}>
             <InputLabel id="month-select-label">Month</InputLabel>
             <Select
               labelId="month-select-label"
@@ -159,7 +230,7 @@ const filteredRecords = financialRecords.filter(record => {
               ))}
             </Select>
           </FormControl>
-          <FormControl>
+          <FormControl style={{ width: "110px" }}>
             <InputLabel id="category-select-label">Category</InputLabel>
             <Select
               labelId="category-select-label"
@@ -179,32 +250,101 @@ const filteredRecords = financialRecords.filter(record => {
           </FormControl>
         </div>
         <Paper style={{ width: "100%", overflow: "hidden" }}>
-        <TableContainer component={Paper} style={{ maxHeight: '50vh', overflow: 'auto' }}>
-            <Table aria-label="simple table">
+          <TableContainer
+            component={Paper}
+            style={{
+              maxHeight: "50vh",
+              overflow: "auto",
+              marginTop: "1rem",
+              boxShadow: "0 10px 9px rgba(0,0,0,0.1)",
+            }}
+          >
+            <Table
+              aria-label="simple table"
+              sx={{ ".MuiTableCell-root": { padding: "10px" } }}
+            >
               <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    backgroundColor: "#212520",
+                    color: "white",
+                    "& .MuiTableCell-head": {
+                      color: "white",
+                    },
+                  }}
+                >
                   <TableCell>Date</TableCell>
                   <TableCell>Amount</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Category</TableCell>
                   <TableCell>Tag</TableCell>
+                  <TableCell>Delete</TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {filteredRecords.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell>{record.date}</TableCell>
-                    <TableCell>${record.amount.toFixed(2)}</TableCell>
-                    <TableCell>{record.description}</TableCell>
-                    <TableCell>{record.categoryId}</TableCell>
-                    <TableCell>{record.tag}</TableCell>
+                  <TableRow
+                  key={record.id} onDoubleClick={() => handleEditClick(record)}
+                    sx={{
+                      "&:nth-of-type(odd)": { backgroundColor: "#fafafa" },
+                      "&:hover": { backgroundColor: "#f0f0f0" },
+                    }}
+                  >
+                    <TableCell>
+                      {new Date(record.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      {editingId === record.id ? (
+                        <TextField
+                          name="amount"
+                          type="number"
+                          value={editFormData.amount}
+                          onChange={handleEditInputChange}
+                          onKeyPress={handleKeyPress}
+                          onBlur={handleBlur}
+                        />
+                      ) : (
+                        `$${parseFloat(record.amount).toFixed(2)}`
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      {editingId === record.id ? (
+                        <TextField
+                          name="description"
+                          value={editFormData.description}
+                          onChange={handleEditInputChange}
+                          onKeyPress={handleKeyPress}
+                          onBlur={handleBlur}
+                        />
+                      ) : (
+                        record.description
+                      )}
+                    </TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell style={{ align: "right" }}>
+                      <DeleteIcon
+                        onClick={() => handleDeleteRecord(record.id)}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
         </Paper>
-        
+
+
         <form
           onSubmit={handleSubmit}
           style={{
@@ -220,16 +360,20 @@ const filteredRecords = financialRecords.filter(record => {
             type="number"
             value={newRecord.amount}
             onChange={handleInputChange}
-            style={{ width: "15%", marginRight: "10px" , height:"20px"}} // You can adjust the width as needed
+            style={{ width: "15%", marginRight: "10px", height: "20px" }} // You can adjust the width as needed
           />
+
           <TextField
             name="categoryId"
             label="Category"
             value={newRecord.categoryId}
             onChange={handleInputChange}
-            style={{ width: "15%", marginRight: "10px", height:"20px"}} // Adjust the width as needed
+            style={{ width: "15%", marginRight: "10px", height: "20px" }} // Adjust the width as needed
           />
-          <FormControl style={{ width: "15%", marginRight: "10px" , height:"20px" }}>
+
+          <FormControl
+            style={{ width: "15%", marginRight: "10px", height: "20px" }}
+          >
             <InputLabel>Type</InputLabel>
             <Select
               name="type"
@@ -247,13 +391,17 @@ const filteredRecords = financialRecords.filter(record => {
             value={newRecord.description}
             onChange={handleInputChange}
             rows={4}
-            style={{ width: "20%" , height:"20px"}} // Adjust the width as needed
+            style={{ width: "20%", height: "20px" }} // Adjust the width as needed
           />
-          <Button type="submit" variant="contained" style={{ width: "10%" , height:"60px", marginTop: "10px"}}>
+          <Button
+            type="submit"
+            variant="contained"
+            style={{ width: "10%", height: "60px", marginTop: "10px" }}
+          >
             Submit
           </Button>
         </form>
-        <Outlet /> 
+        <Outlet />
       </>
     );
 }
