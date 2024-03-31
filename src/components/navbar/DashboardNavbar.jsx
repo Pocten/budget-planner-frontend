@@ -38,6 +38,12 @@ export const DashboardNavbar = () => {
                                             </span>
                                         </li>
                                         <li className="nav-item">
+                                            <span className="nav-link me-2 font-weight-bolder">
+                                                <i className="fa fa-user opacity-6 text-dark me-1"/>
+                                                <Link to={"/tags"}><EqualizerIcon/> My Tags </Link>
+                                            </span>
+                                        </li>
+                                        <li className="nav-item">
                                             <span
                                                 className="nav-link font-weight-bolder d-flex align-items-center me-2 active"
                                                 aria-current="page">
