@@ -41,25 +41,19 @@ export default function Dashboard() {
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [openCreateForm, setOpenCreateForm] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   //define jwt token
   const jwtToken = sessionStorage.getItem("budgetPlanner-login")
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
     : null;
 
-  useEffect(() => {
-    if (!dashboardId || !jwtToken) {
-      navigate("/login");
-      return;
-    }
     const fetchFinancialRecords = async () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
           DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId),
-          {
-            headers: { Authorization: `Bearer ${jwtToken}` },
-          }
+          { headers: { Authorization: `Bearer ${jwtToken}` } }
         );
         setFinancialRecords(response.data);
       } catch (error) {
@@ -68,9 +62,27 @@ export default function Dashboard() {
         setIsLoading(false);
       }
     };
-
-    fetchFinancialRecords();
-  }, [dashboardId, jwtToken, navigate]);
+  
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          DashboardAPIs.getDashboardCategoriesByDashboardId(dashboardId),
+          { headers: { Authorization: `Bearer ${jwtToken}` } }
+        );
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error fetching categories on Dashboard page", error);
+      }
+    };
+  
+    useEffect(() => {
+      if (!dashboardId || !jwtToken) {
+        navigate("/login");
+        return;
+      }
+      fetchFinancialRecords();
+      fetchCategories();
+    }, [dashboardId, jwtToken, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -144,7 +156,9 @@ export default function Dashboard() {
       amount: record.amount,
       description: record.description,
       date: record.date,
-      type: record.type
+      type: record.type,
+      categoryId: record.categoryId, // Ensure this is set to the current record's category ID
+
     });
   };
 
@@ -191,48 +205,46 @@ export default function Dashboard() {
     }
   };
 
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (id) => {
+    id.preventDefault();
     if (!jwtToken) {
       console.error("Authentication error: No JWT Token found.");
       return;
     }
   
-    try {
-      let response;
-      if (editingId) {
-        const dateTimeToSend = `${editFormData.date}T10:00:00.000`;
-        const updatedData = {
-          ...editFormData,
-          date: dateTimeToSend,
-        };
-        response = await axios.put(
-          DashboardAPIs.getFinancialRecordById(dashboardId, editingId),
-          updatedData,
-          { headers: { Authorization: `Bearer ${jwtToken}` } }
-        );
-      } else {
-        const dateTimeToSend = `${newRecord.date}T10:00:00.000`;
-        const dataToCreate = {
-          ...newRecord,
-          date: dateTimeToSend,
-        };
-        response = await axios.post(
-          DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId),
-          dataToCreate,
-          { headers: { Authorization: `Bearer ${jwtToken}` } }
-        );
-      }
+    // Determine if creating or updating based on the presence of `id`
+    const isCreating = !id;
+    const url = isCreating ? DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId) : DashboardAPIs.getFinancialRecordById(dashboardId, id);
+    const method = isCreating ? 'post' : 'put';
+    const data = isCreating ? newRecord : editFormData;
   
-      // Handle the response for both creating and updating.
-      const recordResponse = response.data;
-      setFinancialRecords((prevRecords) => [...prevRecords, recordResponse]);
-      // Reset form state.
-      handleCreateFormClose();
-      setNewRecord({ amount: "", date: "", categoryId: "", type: "", description: "" });
-      setEditingId(null);
-      setEditFormData({});
+    try {
+      console.log("Try create record" + data); // Just before making the axios request
+      const dataToSubmit = {
+        amount: newRecord.amount,
+        description: newRecord.description,
+        categoryId: newRecord.categoryId // Ensure this is a string. If it's not, convert or validate before setting.
+      };
+    
+      const response = await axios.post(
+        DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId),
+        dataToSubmit,
+        { headers: { Authorization: `Bearer ${jwtToken}` } }
+      );
+
+      const savedRecord = response.data;
+      console.log("creating "+ savedRecord)
+  
+      if (isCreating) {
+        // If creating a new record, add it to the state
+        setFinancialRecords((prevRecords) => [...prevRecords, savedRecord]);
+        setNewRecord({ amount: "", date: "", categoryId: "", type: "", description: "" }); // Reset new record form
+      } else {
+        fetchFinancialRecords();
+        setFinancialRecords((prevRecords) => prevRecords.map((record) => (record.id === id ? savedRecord : record)));
+        setEditFormData({}); // Reset edit form
+        setEditingId(null);
+      }
     } catch (error) {
       console.error("Error submitting financial record", error);
     }
@@ -407,7 +419,33 @@ export default function Dashboard() {
                       record.description
                     )}
                   </TableCell>
-                  <TableCell></TableCell>
+                  <TableCell>
+  {editingId === record.id ? (
+    // If in edit mode, show a dropdown to select the category
+    <FormControl size="small" fullWidth>
+      <Select
+        name="categoryId"
+        value={editFormData.categoryId}
+        onChange={handleEditInputChange}
+        onBlur={handleBlur}
+        displayEmpty
+      >
+      <MenuItem value="">
+      <em>None</em>
+    </MenuItem>
+    {categories.map((category) => (
+      <MenuItem key={category.id} value={category.id}>
+        {category.name}
+      </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  ) : (
+    // Display the category name for the current record
+    categories.find((cat) => cat.id === record.categoryId)?.name || ''
+  )}
+</TableCell>
+
                   <TableCell></TableCell>
                   <TableCell style={{ align: "right" }}>
                     <DeleteIcon
@@ -447,13 +485,26 @@ export default function Dashboard() {
           style={{ width: "15%", marginRight: "10px", height: "20px" }} // You can adjust the width as needed
         />
 
-        <TextField
-          name="categoryId"
-          label="Category"
-          value={newRecord.categoryId}
-          onChange={handleInputChange}
-          style={{ width: "15%", marginRight: "10px", height: "20px" }} // Adjust the width as needed
-        />
+<FormControl fullWidth>
+  <InputLabel id="category-select-label">Category</InputLabel>
+  <Select
+    labelId="category-select-label"
+    id="category-select"
+    name="categoryId"
+    value={newRecord.categoryId}
+    onChange={handleInputChange}
+    label="Category"
+  >
+    <MenuItem value="">
+      <em>None</em>
+    </MenuItem>
+    {categories.map((category) => (
+    <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
+))}
+
+  </Select>
+</FormControl>
+
 
         <FormControl
           style={{ width: "15%", marginRight: "10px", height: "20px" }}

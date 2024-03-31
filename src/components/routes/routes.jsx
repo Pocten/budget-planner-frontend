@@ -10,7 +10,7 @@ import Dashboard from "../dashboards/Dashboard";
 import ListDashboards from "../dashboards/ListDashboards";
 import {DashboardNavbar} from '../navbar/DashboardNavbar';
 import MyStatistics from "../dashboards/MyStatistics";
-
+import Categories from "../dashboards/Categories";
 export const routesBeforeLogin = () => {
     return <Routes>
         <Route path={"/"} element={<SignIn/>}/>
@@ -28,6 +28,7 @@ export const routesAfterLogin = () => {
         <Route path={"/dashboards"} element={<ListDashboards/>}/>
         <Route path="/dashboard/:dashboardId" element={<Dashboard />} />
         <Route path="/dashboard/:dashboardId" element={<DashboardNavbar />} />
+        <Route path="/dashboard/:dashboardId/categories" element={<Categories />} />
         <Route path={"/contact"} element={<ContactMe/>}/>
         <Route path={"/about-us"} element={<AboutUs/>}/>
         <Route path={"/edit-profile"} element={<EditProfile/>}/>

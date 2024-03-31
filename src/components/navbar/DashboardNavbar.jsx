@@ -34,7 +34,7 @@ export const DashboardNavbar = () => {
                                     <li className="nav-item">
                                             <span className="nav-link me-2 font-weight-bolder">
                                                 <i className="fa fa-user opacity-6 text-dark me-1"/>
-                                                <Link to={"/categories"}><EqualizerIcon/> My Categories </Link>
+                                                <Link to={`/dashboard/${dashboardId}/categories`}><EqualizerIcon/> My Categories </Link>
                                             </span>
                                         </li>
                                         <li className="nav-item">
