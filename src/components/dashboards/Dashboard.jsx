@@ -42,7 +42,12 @@ export default function Dashboard() {
   const [editFormData, setEditFormData] = useState({});
   //const [openCreateForm, setOpenCreateForm] = useState(false);
   const [categories, setCategories] = useState([]);
-
+  const [formErrors] = useState({
+    amount: false,
+    type: false,
+    // Add other fields as necessary
+  });
+  
   //define jwt token
   const jwtToken = sessionStorage.getItem("budgetPlanner-login")
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
@@ -175,6 +180,13 @@ useEffect(() => {
   
 
   const handleSave = async (id) => {
+
+     // Validate the amount before submitting
+  const amountValue = parseFloat(newRecord.amount);
+  if ( amountValue <= 0) {
+    console.error("Invalid amount: Amount must be greater than 0.");
+    return; 
+  }
     if (!jwtToken) {
       console.error("Authentication error: No JWT Token found.");
       return;
@@ -383,14 +395,17 @@ useEffect(() => {
                         onChange={handleEditInputChange}
                         onKeyPress={handleKeyPress}
                         onBlur={handleBlur}
-                        InputProps={{
-                          startAdornment:
-                            editFormData.type === "INCOME" ? "+" : "-",
-                        }}
+                        inputProps={{ min: "0.01", step: "0.01" }} // Enforces minimum value and step
                         style={{
                           color:
                             editFormData.type === "INCOME" ? "green" : "red",
                         }}
+                        error={parseFloat(editFormData.amount) <= 0} // Correctly parse the amount as a float before comparing
+                        helperText={
+                          parseFloat(editFormData.amount) <= 0
+                            ? "Only numbers over 0 are possible"
+                            : ""
+                        }
                       />
                     ) : (
                       // Display mode: Show amount with color and symbol based on type
@@ -487,17 +502,28 @@ useEffect(() => {
           display: "flex",
           justifyContent: "space-around",
           alignItems: "flex-end",
-          margin: "10px",
+          margin: "20px",
         }}
       >
+
         <TextField
           name="amount"
           label="Amount"
           type="number"
           value={newRecord.amount}
           onChange={handleInputChange}
-          style={{ width: "15%", marginRight: "10px", height: "20px" }} // You can adjust the width as needed
+          inputProps={{ min: "0.01", step: "0.01" }} // This prevents negative numbers and allows only positive values greater than 0
+          style={{ width: "15%", marginRight: "10px", height: "20px" }}
+          error={parseFloat(newRecord.amount) <= 0}
+          helperText={
+            parseFloat(newRecord.amount) <= 0
+              ? "Only numbers over 0 are possible"
+              : ""
+          }
+          InputProps={{}}
+          required
         />
+
         <TextField
           name="date"
           type="date"
@@ -506,7 +532,7 @@ useEffect(() => {
           style={{ width: "15%", marginRight: "10px", height: "20px" }} // You can adjust the width as needed
         />
 
-        <FormControl fullWidth>
+        <FormControl  style={{ width: "15%", marginRight: "10px", height: "20px" }} fullWidth>
           <InputLabel id="category-select-label">Category</InputLabel>
           <Select
             labelId="category-select-label"
@@ -528,6 +554,7 @@ useEffect(() => {
         </FormControl>
 
         <FormControl
+        error={formErrors.type} required fullWidth
           style={{ width: "15%", marginRight: "10px", height: "20px" }}
         >
           <InputLabel>Type</InputLabel>
@@ -536,6 +563,9 @@ useEffect(() => {
             value={newRecord.type}
             label="Type"
             onChange={handleInputChange}
+            required
+  error={formErrors.type}
+  helperText={formErrors.type ? "Type is required" : ""}
           >
             <MenuItem value="INCOME">INCOME</MenuItem>
             <MenuItem value="EXPENSE">EXPENSE</MenuItem>
@@ -552,7 +582,7 @@ useEffect(() => {
         <Button
           type="submit"
           variant="contained"
-          style={{ width: "10%", height: "60px", marginTop: "10px" }}
+          style={{ width: "15%", marginRight: "10px", height: "50px" }}
         >
           Submit
         </Button>
