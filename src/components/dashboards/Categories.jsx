@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { CircularProgress, Button, Container, TextField, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton } from '@mui/material';
@@ -14,25 +14,26 @@ export default function Categories() {
     const [newCategory, setNewCategory] = useState({ name: '', description: '' });
     const jwtToken = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(sessionStorage.getItem('budgetPlanner-login')).jwt : null;
 
-    useEffect(() => {
-        fetchCategories();
-    }, [dashboardId]);
 
-    const fetchCategories = async () => {
-        setIsLoading(true);
-        try {
-            const response = await axios.get(DashboardAPIs.getDashboardCategoriesByDashboardId(dashboardId), {
-                headers: { Authorization: `Bearer ${jwtToken}` },
-            });
-            setCategories(response.data);
-            setIsLoading(false);
-            console.log("Categories are : " + response.data); // After fetching categories
 
-        } catch (error) {
-            console.error('Error fetching categories in Categories page', error);
-            setIsLoading(false);
-        }
-    };
+    const fetchCategories = useCallback(async () => {
+      setIsLoading(true);
+      try {
+          const response = await axios.get(DashboardAPIs.getDashboardCategoriesByDashboardId(dashboardId), {
+              headers: { Authorization: `Bearer ${jwtToken}` },
+          });
+          setCategories(response.data);
+      } catch (error) {
+          console.error('Error fetching categories in Categories page', error);
+      } finally {
+          setIsLoading(false);
+      }
+  }, [dashboardId, jwtToken]); // Dependencies for useCallback
+  
+  useEffect(() => {
+    fetchCategories();
+}, [fetchCategories]);
+
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -49,8 +50,8 @@ export default function Categories() {
             await axios.post(DashboardAPIs.getDashboardCategoriesByDashboardId(dashboardId), newCategory, {
                 headers: { Authorization: `Bearer ${jwtToken}` },
             });
-            fetchCategories(); // Refresh the category list
-            setNewCategory({ name: '', description: '' }); // Reset form
+            fetchCategories(); 
+            setNewCategory({ name: '', description: '' }); 
         } catch (error) {
             console.error('Error adding the category', error);
         }

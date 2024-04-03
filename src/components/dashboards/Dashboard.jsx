@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Outlet } from 'react-router-dom';
@@ -32,7 +32,7 @@ export default function Dashboard() {
   const [newRecord, setNewRecord] = useState({
     amount: "",
     date: "",
-    categoryId: "",
+    category: "",
     type: "",
     description: "",
   });
@@ -40,7 +40,7 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
-  const [openCreateForm, setOpenCreateForm] = useState(false);
+  //const [openCreateForm, setOpenCreateForm] = useState(false);
   const [categories, setCategories] = useState([]);
 
   //define jwt token
@@ -48,7 +48,7 @@ export default function Dashboard() {
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
     : null;
 
-    const fetchFinancialRecords = async () => {
+    const fetchFinancialRecords = useCallback(async () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
@@ -61,9 +61,9 @@ export default function Dashboard() {
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [dashboardId, jwtToken]);
   
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
       try {
         const response = await axios.get(
           DashboardAPIs.getDashboardCategoriesByDashboardId(dashboardId),
@@ -73,16 +73,17 @@ export default function Dashboard() {
       } catch (error) {
         console.error("Error fetching categories on Dashboard page", error);
       }
-    };
+    }, [dashboardId, jwtToken]);
+
+useEffect(() => {
+  if (!dashboardId || !jwtToken) {
+    navigate("/login");
+    return;
+  }
+  fetchFinancialRecords();
+  fetchCategories();
   
-    useEffect(() => {
-      if (!dashboardId || !jwtToken) {
-        navigate("/login");
-        return;
-      }
-      fetchFinancialRecords();
-      fetchCategories();
-    }, [dashboardId, jwtToken, navigate]);
+}, [dashboardId, jwtToken, navigate, fetchFinancialRecords, fetchCategories]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -110,9 +111,7 @@ export default function Dashboard() {
     return dateMatch && categoryMatch;
   });
 
-  const handleCreateFormClose = () => {
-    setOpenCreateForm(false);
-  };
+
   
   if (isLoading) {
     return (
@@ -145,6 +144,7 @@ export default function Dashboard() {
       setFinancialRecords((prevRecords) =>
         prevRecords.filter((record) => record.id !== recordId)
       );
+      console.log("Deleting record :" + recordId)
     } catch (error) {
       console.error("Error deleting financial record", error);
     }
@@ -157,43 +157,55 @@ export default function Dashboard() {
       description: record.description,
       date: record.date,
       type: record.type,
-      categoryId: record.categoryId, // Ensure this is set to the current record's category ID
-
+      categoryId: record.category ? record.category.id : "", // set categoryId from record's category object if exists
     });
   };
+  
 
   const handleEditInputChange = (event) => {
     const { name, value } = event.target;
-    setEditFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    console.log(`Before update: ${name} = ${value}`); // Add this line for debugging
+  
+    setEditFormData((prev) => {
+      const updatedFormData = { ...prev, [name]: value };
+      console.log(`After update: ${name} = ${updatedFormData[name]}`); // Add this line for debugging
+      return updatedFormData;
+    });
   };
+  
 
   const handleSave = async (id) => {
     if (!jwtToken) {
       console.error("Authentication error: No JWT Token found.");
       return;
     }
-
+  
+    const categoryObject = categories.find(cat => cat.id === editFormData.categoryId);
+    const dataToSubmit = {
+      ...editFormData,
+      category: categoryObject ? { id: categoryObject.id } : null,
+    };
+  
     try {
       const response = await axios.put(
         DashboardAPIs.getFinancialRecordById(dashboardId, id),
-        editFormData,
-        {
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        }
+        dataToSubmit,
+        { headers: { Authorization: `Bearer ${jwtToken}` } }
       );
+  
       const updatedRecord = response.data;
+  
       setFinancialRecords((prevRecords) =>
         prevRecords.map((record) => (record.id === id ? updatedRecord : record))
       );
+  
       setEditingId(null);
       setEditFormData({});
     } catch (error) {
       console.error("Error updating financial record", error);
     }
   };
+  
 
   const handleBlur = () => {
     handleSave(editingId);
@@ -212,10 +224,7 @@ export default function Dashboard() {
       return;
     }
   
-    // Determine if creating or updating based on the presence of `id`
     const isCreating = !id;
-    const url = isCreating ? DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId) : DashboardAPIs.getFinancialRecordById(dashboardId, id);
-    const method = isCreating ? 'post' : 'put';
     const data = isCreating ? newRecord : editFormData;
   
     try {
@@ -223,26 +232,30 @@ export default function Dashboard() {
       const dataToSubmit = {
         amount: newRecord.amount,
         description: newRecord.description,
-        categoryId: newRecord.categoryId // Ensure this is a string. If it's not, convert or validate before setting.
+        category: newRecord.categoryId ? { id: newRecord.categoryId } : undefined,
+        type: newRecord.type, // This line was missing
+
       };
+
+      console.log("Category id when creating record is " + newRecord.categoryId)
     
       const response = await axios.post(
         DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId),
         dataToSubmit,
         { headers: { Authorization: `Bearer ${jwtToken}` } }
       );
+      window.location.reload();
 
       const savedRecord = response.data;
-      console.log("creating "+ savedRecord)
-  
+
+
       if (isCreating) {
-        // If creating a new record, add it to the state
         setFinancialRecords((prevRecords) => [...prevRecords, savedRecord]);
-        setNewRecord({ amount: "", date: "", categoryId: "", type: "", description: "" }); // Reset new record form
+        setNewRecord({ amount: "", date: "", category: "", type: "", description: "" }); 
       } else {
         fetchFinancialRecords();
         setFinancialRecords((prevRecords) => prevRecords.map((record) => (record.id === id ? savedRecord : record)));
-        setEditFormData({}); // Reset edit form
+        setEditFormData({}); 
         setEditingId(null);
       }
     } catch (error) {
@@ -363,48 +376,54 @@ export default function Dashboard() {
 
                   <TableCell>
                     {editingId === record.id ? (
-                     <TextField
-                     name="amount"
-                     type="number"
-                     value={editFormData.amount}
-                     onChange={handleEditInputChange}
-                     onKeyPress={handleKeyPress}
-                     onBlur={handleBlur}
-                     InputProps={{
-                       startAdornment: editFormData.type === 'INCOME' ? '+' : '-',
-                     }}
-                     style={{
-                       color: editFormData.type === 'INCOME' ? 'green' : 'red',
-                     }}
-                   />
-                 ) : (
-                   // Display mode: Show amount with color and symbol based on type
-                   <span style={{ color: record.type === 'INCOME' ? 'green' : 'red' }}>
-                     {record.type === 'INCOME' ? '+' : '-'}${parseFloat(record.amount).toFixed(2)}
-                   </span>
-                 )}
+                      <TextField
+                        name="amount"
+                        type="number"
+                        value={editFormData.amount}
+                        onChange={handleEditInputChange}
+                        onKeyPress={handleKeyPress}
+                        onBlur={handleBlur}
+                        InputProps={{
+                          startAdornment:
+                            editFormData.type === "INCOME" ? "+" : "-",
+                        }}
+                        style={{
+                          color:
+                            editFormData.type === "INCOME" ? "green" : "red",
+                        }}
+                      />
+                    ) : (
+                      // Display mode: Show amount with color and symbol based on type
+                      <span
+                        style={{
+                          color: record.type === "INCOME" ? "green" : "red",
+                        }}
+                      >
+                        {record.type === "INCOME" ? "+" : "-"}$
+                        {parseFloat(record.amount).toFixed(2)}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
-  {editingId === record.id ? (
-    // If in edit mode, show a dropdown to select type
-    <FormControl size="small" fullWidth>
-      <Select
-        name="type"
-        value={editFormData.type}
-        onChange={handleEditInputChange}
-        onBlur={handleBlur}
-        displayEmpty
-      >
-        <MenuItem value="INCOME">INCOME</MenuItem>
-        <MenuItem value="EXPENSE">EXPENSE</MenuItem>
-      </Select>
-    </FormControl>
-  ) : (
-    // Just display the type as text when not editing
-    record.type
-  )}
-</TableCell>
-
+                    {editingId === record.id ? (
+                      // If in edit mode, show a dropdown to select type
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          name="type"
+                          value={editFormData.type}
+                          onChange={handleEditInputChange}
+                          onBlur={handleBlur}
+                          displayEmpty
+                        >
+                          <MenuItem value="INCOME">INCOME</MenuItem>
+                          <MenuItem value="EXPENSE">EXPENSE</MenuItem>
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      // Just display the type as text when not editing
+                      record.type
+                    )}
+                  </TableCell>
 
                   <TableCell>
                     {editingId === record.id ? (
@@ -419,32 +438,34 @@ export default function Dashboard() {
                       record.description
                     )}
                   </TableCell>
+
                   <TableCell>
-  {editingId === record.id ? (
-    // If in edit mode, show a dropdown to select the category
-    <FormControl size="small" fullWidth>
-      <Select
-        name="categoryId"
-        value={editFormData.categoryId}
-        onChange={handleEditInputChange}
-        onBlur={handleBlur}
-        displayEmpty
-      >
-      <MenuItem value="">
-      <em>None</em>
-    </MenuItem>
-    {categories.map((category) => (
-      <MenuItem key={category.id} value={category.id}>
-        {category.name}
-      </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  ) : (
-    // Display the category name for the current record
-    categories.find((cat) => cat.id === record.categoryId)?.name || ''
-  )}
-</TableCell>
+                    {editingId === record.id ? (
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          name="categoryId"
+                          value={editFormData.categoryId} // this should reflect the edit form's state
+                          onChange={handleEditInputChange}
+                          onBlur={handleBlur}
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          {categories.map((category) => (
+                            <MenuItem key={category.id} value={category.id}>
+                              {category.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : // When not editing, display the category name
+                    record.category ? (
+                      record.category.name
+                    ) : (
+                      "None"
+                    )}
+                  </TableCell>
 
                   <TableCell></TableCell>
                   <TableCell style={{ align: "right" }}>
@@ -485,26 +506,26 @@ export default function Dashboard() {
           style={{ width: "15%", marginRight: "10px", height: "20px" }} // You can adjust the width as needed
         />
 
-<FormControl fullWidth>
-  <InputLabel id="category-select-label">Category</InputLabel>
-  <Select
-    labelId="category-select-label"
-    id="category-select"
-    name="categoryId"
-    value={newRecord.categoryId}
-    onChange={handleInputChange}
-    label="Category"
-  >
-    <MenuItem value="">
-      <em>None</em>
-    </MenuItem>
-    {categories.map((category) => (
-    <MenuItem key={category.id} value={category.id}>{category.name}</MenuItem>
-))}
-
-  </Select>
-</FormControl>
-
+        <FormControl fullWidth>
+          <InputLabel id="category-select-label">Category</InputLabel>
+          <Select
+            labelId="category-select-label"
+            id="category-select"
+            name="categoryId"
+            value={newRecord.categoryId}
+            onChange={handleInputChange}
+            label="Category"
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            {categories.map((category) => (
+              <MenuItem key={category.id} value={category.id}>
+                {category.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
         <FormControl
           style={{ width: "15%", marginRight: "10px", height: "20px" }}
