@@ -40,15 +40,13 @@ export default function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
-  //const [openCreateForm, setOpenCreateForm] = useState(false);
   const [categories, setCategories] = useState([]);
   const [formErrors] = useState({
     amount: false,
     type: false,
-    // Add other fields as necessary
   });
   
-  //define jwt token
+  
   const jwtToken = sessionStorage.getItem("budgetPlanner-login")
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
     : null;
@@ -87,6 +85,7 @@ useEffect(() => {
   }
   fetchFinancialRecords();
   fetchCategories();
+
   
 }, [dashboardId, jwtToken, navigate, fetchFinancialRecords, fetchCategories]);
 
@@ -103,19 +102,24 @@ useEffect(() => {
   };
 
   const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value);
+    const category = event.target.value;
+    setSelectedCategory(category);
   };
+
+  
 
   const filteredRecords = financialRecords.filter((record) => {
     const dateMatch = selectedMonth
       ? new Date(record.date).getMonth() === parseInt(selectedMonth, 10) - 1
       : true;
+  
     const categoryMatch = selectedCategory
-      ? record.category === selectedCategory
+      ? record.category?.id === selectedCategory
       : true;
+  
     return dateMatch && categoryMatch;
   });
-
+  
 
   
   if (isLoading) {
@@ -308,21 +312,23 @@ useEffect(() => {
         <FormControl style={{ width: "110px" }}>
           <InputLabel id="category-select-label">Category</InputLabel>
           <Select
-            labelId="category-select-label"
-            id="category-select"
+            labelId="category-filter-label"
+            id="category-filter"
             value={selectedCategory}
             onChange={handleCategoryChange}
+            displayEmpty
           >
             <MenuItem value="">
-              <em>None</em>
+            <em>All</em>
+          </MenuItem>
+     
+          {categories.map((category) => (
+            <MenuItem key={category.id} value={category.id}>
+              {category.name}
             </MenuItem>
-            <MenuItem value="Food">Food</MenuItem>
-            <MenuItem value="Living">Living</MenuItem>
-            <MenuItem value="Clothes">Clothes</MenuItem>
-            <MenuItem value="Drug">Drug</MenuItem>
-            <MenuItem value="Other">Other</MenuItem>
-          </Select>
-        </FormControl>
+          ))}
+        </Select>
+      </FormControl>
       </div>
       <Paper style={{ width: "100%", overflow: "hidden" }}>
         <TableContainer
