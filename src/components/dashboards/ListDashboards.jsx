@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { CircularProgress, Button, Container, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import {DashboardAPIs} from "../../const/APIs";
-
+import { DashboardAPIs } from "../../const/APIs";
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // Import icon for creating new dashboard
 
 export default function ListDashboards() {
     const [dashboards, setDashboards] = useState([]);
@@ -71,14 +73,33 @@ export default function ListDashboards() {
                 },
             });
             handleCreateDashboardClose();
-            setNewDashboard({ title: '', description: '' }); // Reset form
-            fetchDashboards(); // Refresh dashboards list
+            setNewDashboard({ title: '', description: '' });
+            fetchDashboards(); 
         } catch (error) {
             console.error('Error creating dashboard', error);
         }
     };
+    const handleDeleteDashboard = async (dashboardId, event) => {
+      event.stopPropagation(); // Stop click event from bubbling up
+      if (window.confirm('Are you sure you want to delete this dashboard?')) {
+        if (!jwtToken) {
+          console.error("Authentication error: No JWT Token found.");
+          return;
+        }
 
-    console.log("TOKEN IS " +jwtToken)
+        try {
+          await axios.delete(DashboardAPIs.getUserDashboardById(userId, dashboardId), {
+            headers: { Authorization: `Bearer ${jwtToken}` },
+          });
+          // Refresh the dashboard list
+          fetchDashboards();
+        } catch (error) {
+          console.error("Error deleting dashboard", error);
+        }
+      }
+    };
+
+
     return (
       <Container className="mt-5">
         {isLoading ? (
@@ -86,70 +107,64 @@ export default function ListDashboards() {
         ) : (
           <div className="container my-5">
             <div className="row" style={{ marginTop: "100px" }}>
-              {dashboards.length === 0 && (
-                <div className="col-12 text-center">
-                  <h3 className="text-muted">
-                    You don't have any dashboards yet.
-                  </h3>
-                  <Button
-                    variant="contained"
-                    onClick={handleCreateDashboardOpen}
-                  >
-                    Create Your First Dashboard
-                  </Button>
-                </div>
-              )}
+              {/* Map through dashboards to display them */}
               {dashboards.map((dashboard) => (
-                <div
-                  key={dashboard.id}
-                  className="col-md-4 d-flex align-items-stretch"
-                >
+                <div key={dashboard.id} className="col-md-4 d-flex align-items-stretch">
                   <div
                     className="card my-2"
                     style={{
                       width: "100%",
                       cursor: "pointer",
                       boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)",
+                      position: "relative",
                     }}
                     onClick={() => handleDashboardClick(dashboard.id)}
                   >
+                    <IconButton
+                      onClick={(event) => handleDeleteDashboard(dashboard.id, event)}
+                      style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                      }}
+                      color="error"
+                      aria-label="delete dashboard"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
                     <div className="card-body d-flex flex-column">
                       <h5 className="card-title">{dashboard.title}</h5>
-                      <p className="card-text" style={{ flexGrow: 1 }}>
-                        {dashboard.description}
-                      </p>
-                      <a className="mt-2 btn btn-primary stretched-link">
-                        Go to Dashboard
-                      </a>
+                      <p className="card-text">{dashboard.description}</p>
+                      <Button variant="contained">Go to Dashboard</Button>
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
-            {/* "Create New Dashboard" card */}
-            <div className="col-md-4 d-flex align-items-stretch">
-              <div
-                className="card my-2 border-2 border-dashed border-secondary"
-                style={{
-                  width: "100%",
-                  cursor: "pointer",
-                  minHeight: "200px",
-                  display: "flex",
-                  flexDirection: "column", // Ensures the flex items are stacked vertically
-                  justifyContent: "center", // Vertically centers the button in the card
-                }}
-                onClick={handleCreateDashboardOpen}
-              >
-                <div className="card-body d-flex justify-content-center">
-                  <button className="btn btn-outline-primary">
-                    <strong>Create New Dashboard</strong>
-                  </button>
+              {/* "Create New Dashboard" card */}
+              <div className="col-md-4 d-flex align-items-stretch">
+                <div
+                  className="card my-2 border-2 border-dashed border-secondary"
+                  style={{
+                    width: "100%",
+                    cursor: "pointer",
+                    minHeight: "200px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center", // Center the icon horizontally
+                  }}
+                  onClick={handleCreateDashboardOpen}
+                >
+                  <IconButton size="large" color="primary">
+                    <AddCircleOutlineIcon style={{ fontSize: '3rem' }} />
+                  </IconButton>
+                  <div>Create New Dashboard</div>
                 </div>
               </div>
             </div>
           </div>
         )}
-        {/* Dialog for creating a new dashboard */}
+
         <Dialog open={openCreateForm} onClose={() => setOpenCreateForm(false)}>
           <DialogTitle>Create New Dashboard</DialogTitle>
           <DialogContent>
