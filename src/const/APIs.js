@@ -10,6 +10,7 @@ export const UserAPIs = {
 export const DashboardAPIs = {
     create: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards`,
     getAllDashboardsByUserId: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards`,
+    getAccessibleDashboardsByUserId: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards/accessible`,
     getUserDashboardById: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,
     update: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,
     delete: () => `${BASE_URL}/v1/dashboards`,
@@ -17,5 +18,11 @@ export const DashboardAPIs = {
     getFinancialRecordById: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-records/${id}`,
     getDashboardCategoriesByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/categories`,
     getDashboardCategoryByCategoryId: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/categories/${id}`,
-
+    getDashboardTagsByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/tags`,
+    getDashboardBudgetsByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/budgets`,
+    getDashboardBudgetByBudgetId: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/budgets/${id}`,
+    getDashboardTagByTagId: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/tags/${id}`,
+    getDashboardMembersByDashboardId: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}/members`,
+    generateInviteLinkByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/invite-links`,
+    getDashboardFinancialGoalByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-goals`
 }

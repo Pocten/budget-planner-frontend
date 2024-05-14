@@ -27,12 +27,21 @@ export default function ListDashboards() {
         }
 
         try {
-            const response = await axios.get(DashboardAPIs.getAllDashboardsByUserId(userId), {
+            const ownedResponse = await axios.get(DashboardAPIs.getAllDashboardsByUserId(userId), {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },
             });
-            setDashboards(response.data);
+            const accessibleResponse = await axios.get(DashboardAPIs.getAccessibleDashboardsByUserId(userId), {
+              headers: {
+                  Authorization: `Bearer ${jwtToken}`,
+              },
+          });
+
+          const ownedDashboards = ownedResponse.data.map(dashboard => ({ ...dashboard, isOwned: true }));
+          const accessibleDashboards = accessibleResponse.data.map(dashboard => ({ ...dashboard, isOwned: false }));
+
+          setDashboards([...ownedDashboards, ...accessibleDashboards]);
         } catch (error) {
             console.error('Error fetching dashboards', error);
         } finally {
@@ -66,6 +75,9 @@ export default function ListDashboards() {
             return;
         }
 
+        const addMemberUrl = `${DashboardAPIs.create(userId)}`;
+      
+        console.log("Sending to URL:", addMemberUrl);
         try {
             await axios.post(DashboardAPIs.create(userId), newDashboard, {
                 headers: {

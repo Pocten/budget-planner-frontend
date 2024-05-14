@@ -40,7 +40,7 @@ export const DashboardNavbar = () => {
                                         <li className="nav-item">
                                             <span className="nav-link me-2 font-weight-bolder">
                                                 <i className="fa fa-user opacity-6 text-dark me-1"/>
-                                                <Link to={"/tags"}><EqualizerIcon/> My Tags </Link>
+                                                <Link to={`/dashboard/${dashboardId}/tags`}><EqualizerIcon/> My Tags </Link>
                                             </span>
                                         </li>
                                         <li className="nav-item">
@@ -54,15 +54,22 @@ export const DashboardNavbar = () => {
                                         <li className="nav-item">
                                             <span className="nav-link me-2 font-weight-bolder">
                                                 <i className="fa fa-user opacity-6 text-dark me-1"/>
-                                                <Link to={`/dashboard/${dashboardId}/my-statistics`}><StackedLineChartIcon/> My statistics </Link>
+                                                <Link to={`/dashboard/${dashboardId}/my-budgets`}><StackedLineChartIcon/> My Budgets </Link>
                                             </span>
                                         </li>
                                         <li className="nav-item">
                                             <span className="nav-link me-2 font-weight-bolder">
                                                 <i className="fa fa-user opacity-6 text-dark me-1"/>
-                                                <Link to={"/profile"}><EqualizerIcon/> Graphs </Link>
+                                                <Link to={`/dashboard/${dashboardId}/my-financial-goals`}><EqualizerIcon/> My Financial Goals </Link>
                                             </span>
                                         </li>
+                                        <li className="nav-item">
+                                            <span className="nav-link me-2 font-weight-bolder">
+                                                <i className="fa fa-user opacity-6 text-dark me-1"/>
+                                                <Link to={`/dashboard/${dashboardId}/users-access`}><EqualizerIcon/> Users Access </Link>
+                                            </span>
+                                        </li>
+                                        
                                         
                                     </ul>
                                     

@@ -18,17 +18,22 @@ import {DashboardAPIs} from "../../const/APIs";
 import {
   CircularProgress,
   Container,
+  Typography,
   TextField,
   Button
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-
+import Chip from '@mui/material/Chip';
 
 export default function Dashboard() {
+
   const navigate = useNavigate();
   const { dashboardId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [financialRecords, setFinancialRecords] = useState([]);
+  const [dashboard, setDashboard] = useState(null);
+  const [budgets, setBudgets] = useState([]);
+
   const [newRecord, setNewRecord] = useState({
     amount: "",
     date: "",
@@ -41,12 +46,16 @@ export default function Dashboard() {
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
+
   const [formErrors] = useState({
     amount: false,
     type: false,
   });
-  
-  
+
+
+  //const [budgets, setBudgets] = useState({ startDate: '', endDate: '', totalAmount: '' });
   const jwtToken = sessionStorage.getItem("budgetPlanner-login")
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
     : null;
@@ -65,6 +74,9 @@ export default function Dashboard() {
         setIsLoading(false);
       }
     }, [dashboardId, jwtToken]);
+    useEffect(() => {
+      fetchFinancialRecords();
+    }, [fetchFinancialRecords]);
   
     const fetchCategories = useCallback(async () => {
       try {
@@ -72,22 +84,83 @@ export default function Dashboard() {
           DashboardAPIs.getDashboardCategoriesByDashboardId(dashboardId),
           { headers: { Authorization: `Bearer ${jwtToken}` } }
         );
+        console.log("Categories fetched:", response.data);  // Log the response data
         setCategories(response.data);
       } catch (error) {
         console.error("Error fetching categories on Dashboard page", error);
       }
     }, [dashboardId, jwtToken]);
 
-useEffect(() => {
-  if (!dashboardId || !jwtToken) {
-    navigate("/login");
-    return;
-  }
-  fetchFinancialRecords();
-  fetchCategories();
+    useEffect(() => {
+      fetchCategories();
+    }, [fetchCategories]);  // Ensure fetchCategories doesn't change unnecessarily
+    
+    
+
+    const fetchDashboardDetails = useCallback(async () => {
+      if (!jwtToken) {
+        navigate("/login");
+        return;
+      }
+      try {
+        const response = await axios.get(DashboardAPIs.getDashboardById(dashboardId), {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        setDashboard(response.data);
+      } catch (error) {
+        console.error('Error fetching dashboard details:', error);
+      }
+    }, [dashboardId, jwtToken, navigate]);
+    useEffect(() => {
+      fetchDashboardDetails();
+    }, [fetchDashboardDetails]);
+
+    const fetchBudgets = useCallback(async () => {
+      if (!jwtToken) {
+        navigate("/login");
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const response = await axios.get(DashboardAPIs.getDashboardBudgetsByDashboardId(dashboardId), {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        console.log("Budgets fetched:", response.data); // Log to check the structure
+        setBudgets(response.data); // Ensure this is an array
+      } catch (error) {
+        console.error('Error fetching budgets:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }, [dashboardId, jwtToken, navigate]);
+    
+    useEffect(() => {
+      fetchBudgets();
+    }, [fetchBudgets]);
+    
+
+    const calculateRemainingBudget = (budget) => {
+      const startDate = new Date(budget.startDate);
+      const endDate = new Date(budget.endDate);
+      let totalExpenses = 0;
+      let totalIncome = 0;
+  
+      financialRecords.forEach(record => {
+        const recordDate = new Date(record.date);
+        if (recordDate >= startDate && recordDate <= endDate) {
+          if (record.type === "EXPENSE") {
+            totalExpenses += parseFloat(record.amount);
+          } else if (record.type === "INCOME") {
+            totalIncome += parseFloat(record.amount);
+          }
+        }
+      });
+  
+      return budget.totalAmount - totalExpenses + totalIncome;
+    };
+  
 
   
-}, [dashboardId, jwtToken, navigate, fetchFinancialRecords, fetchCategories]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -105,6 +178,17 @@ useEffect(() => {
     const category = event.target.value;
     setSelectedCategory(category);
   };
+
+  const handleTagChange = (event) => {
+    const {
+        target: { value },
+    } = event;
+    setSelectedTags(
+        // On autofill we get a stringified value.
+        typeof value === 'string' ? value.split(',') : value
+    );
+};
+
 
   
 
@@ -197,9 +281,13 @@ useEffect(() => {
     }
   
     const categoryObject = categories.find(cat => cat.id === editFormData.categoryId);
+    const tagObject = tags.find(tag => tag.id === editFormData.tagId);
+
     const dataToSubmit = {
       ...editFormData,
       category: categoryObject ? { id: categoryObject.id } : null,
+      tag: tagObject ? { id: tagObject.id } : null,
+
     };
   
     try {
@@ -233,52 +321,42 @@ useEffect(() => {
     }
   };
 
-  const handleSubmit = async (id) => {
-    id.preventDefault();
+  const handleSubmit = async (event) => {
+
+    event.preventDefault();
     if (!jwtToken) {
-      console.error("Authentication error: No JWT Token found.");
-      return;
+        console.error("Authentication error: No JWT Token found.");
+        return;
     }
-  
-    const isCreating = !id;
-    const data = isCreating ? newRecord : editFormData;
-  
-    try {
-      console.log("Try create record" + data); // Just before making the axios request
-      const dataToSubmit = {
+
+    let formattedDate = new Date(newRecord.date).toISOString(); // Ensures the date includes time
+
+    const dataToSubmit = {
         amount: newRecord.amount,
         description: newRecord.description,
         category: newRecord.categoryId ? { id: newRecord.categoryId } : undefined,
-        type: newRecord.type, // This line was missing
+        type: newRecord.type,
+        date: formattedDate  // Use the formatted date
 
-      };
+    };
 
-      console.log("Category id when creating record is " + newRecord.categoryId)
-    
-      const response = await axios.post(
-        DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId),
-        dataToSubmit,
-        { headers: { Authorization: `Bearer ${jwtToken}` } }
-      );
-      window.location.reload();
+    console.log("Submitting record with date:", dataToSubmit);  // Log the date being submitted
 
-      const savedRecord = response.data;
-
-
-      if (isCreating) {
-        setFinancialRecords((prevRecords) => [...prevRecords, savedRecord]);
-        setNewRecord({ amount: "", date: "", category: "", type: "", description: "" }); 
-      } else {
-        fetchFinancialRecords();
-        setFinancialRecords((prevRecords) => prevRecords.map((record) => (record.id === id ? savedRecord : record)));
-        setEditFormData({}); 
-        setEditingId(null);
-      }
+    try {
+        const response = await axios.post(
+            DashboardAPIs.getUserFinancialRecordsByDashboardId(dashboardId),
+            dataToSubmit,
+            { headers: { Authorization: `Bearer ${jwtToken}` } }
+        );
+        setFinancialRecords(prevRecords => [...prevRecords, response.data]);
+        setNewRecord({ amount: "", date: "", category: "", type: "", description: "" });
     } catch (error) {
-      console.error("Error submitting financial record", error);
+        console.error("Error submitting financial record", error);
     }
-  };
-  
+};
+
+
+
 
   return (
     <>
@@ -291,7 +369,8 @@ useEffect(() => {
           marginTop: "150px",
         }}
       >
-        <FormControl style={{ marginRight: "20px", width: "90px" }}>
+         
+        {/* <FormControl style={{ marginRight: "20px", width: "90px" }}>
           <InputLabel id="month-select-label">Month</InputLabel>
           <Select
             labelId="month-select-label"
@@ -309,7 +388,8 @@ useEffect(() => {
             ))}
           </Select>
         </FormControl>
-        <FormControl style={{ width: "110px" }}>
+         */}
+        {/* <FormControl style={{ width: "110px" }}>
           <InputLabel id="category-select-label">Category</InputLabel>
           <Select
             labelId="category-filter-label"
@@ -319,17 +399,30 @@ useEffect(() => {
             displayEmpty
           >
             <MenuItem value="">
-            <em>All</em>
-          </MenuItem>
-     
-          {categories.map((category) => (
-            <MenuItem key={category.id} value={category.id}>
-              {category.name}
+              <em>All</em>
             </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+
+            {categories.map((category) => (
+              <MenuItem key={category.id} value={category.id}>
+                {category.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl> */}
       </div>
+
+          {/* BUDGET INFO ON TOP */}
+          <Container>
+          {Array.isArray(budgets) && budgets.map((budget) => (
+  <Typography key={budget.id} style={{ marginBottom: '10px' }}>
+    Your budget from {new Date(budget.startDate).toLocaleDateString()} till {new Date(budget.endDate).toLocaleDateString()} is ${budget.totalAmount}. You have ${calculateRemainingBudget(budget)} left.
+  </Typography>
+))}
+
+        
+      </Container>
+
+          {/* FINANCIAL RECORDS TABLE INFO ON TOP */}
       <Paper style={{ width: "100%", overflow: "hidden" }}>
         <TableContainer
           component={Paper}
@@ -354,13 +447,32 @@ useEffect(() => {
                   },
                 }}
               >
-                <TableCell>Date</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Tag</TableCell>
-                <TableCell>Delete</TableCell>
+                <TableCell  style={{
+                         width:"100px"
+                          }}>Date</TableCell>
+
+                <TableCell  style={{
+                         width:"60px"
+                          }}>Amount</TableCell>
+                <TableCell  style={{
+                         width:"60px"
+                          }}>Type</TableCell>
+                <TableCell
+                  style={{
+                    width: "100px",
+                  }}
+                >
+                  Description
+                </TableCell>
+                <TableCell  style={{
+                         width:"80px"
+                          }}>Category</TableCell>
+                {/* <TableCell  style={{
+                         width:"150px"
+                          }}>Tag</TableCell> */}
+                <TableCell  style={{
+                         width:"20px"
+                          }}>Delete</TableCell>
               </TableRow>
             </TableHead>
 
@@ -374,24 +486,33 @@ useEffect(() => {
                     "&:hover": { backgroundColor: "#f0f0f0" },
                   }}
                 >
-                  <TableCell>
-                    {editingId === record.id ? (
-                      <TextField
-                        name="date"
-                        value={editFormData.date}
-                        onChange={handleEditInputChange}
-                        onKeyPress={handleKeyPress}
-                        onBlur={handleBlur}
-                      />
-                    ) : (
-                      new Date(record.date).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    )}
-                  </TableCell>
 
+                 {/* DATE CELL INFO IN TABLE */}
+                 <TableCell>
+  {editingId === record.id ? (
+    <TextField
+      type="date"
+      name="date"
+      InputLabelProps={{
+        shrink: true,
+      }}
+      value={editFormData.date.slice(0, 10)} // assuming editFormData.date is a full ISO string
+      onChange={handleEditInputChange}
+      onKeyPress={handleKeyPress}
+      onBlur={handleBlur}
+      style={{ width: "100px" }}
+    />
+  ) : (
+    new Date(record.date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  )}
+</TableCell>
+
+
+                  {/* AMOUNT INFO CELL IN TABLE*/}
                   <TableCell>
                     {editingId === record.id ? (
                       <TextField
@@ -405,6 +526,7 @@ useEffect(() => {
                         style={{
                           color:
                             editFormData.type === "INCOME" ? "green" : "red",
+                          width: "60px",
                         }}
                         error={parseFloat(editFormData.amount) <= 0} // Correctly parse the amount as a float before comparing
                         helperText={
@@ -425,6 +547,8 @@ useEffect(() => {
                       </span>
                     )}
                   </TableCell>
+
+                  {/* TYPE INFO CELL IN TABLE*/}
                   <TableCell>
                     {editingId === record.id ? (
                       // If in edit mode, show a dropdown to select type
@@ -435,6 +559,9 @@ useEffect(() => {
                           onChange={handleEditInputChange}
                           onBlur={handleBlur}
                           displayEmpty
+                          style={{
+                            width: "60px",
+                          }}
                         >
                           <MenuItem value="INCOME">INCOME</MenuItem>
                           <MenuItem value="EXPENSE">EXPENSE</MenuItem>
@@ -446,6 +573,7 @@ useEffect(() => {
                     )}
                   </TableCell>
 
+                 {/* DESCRIPTION INFO CELL IN TABLE*/}
                   <TableCell>
                     {editingId === record.id ? (
                       <TextField
@@ -454,12 +582,16 @@ useEffect(() => {
                         onChange={handleEditInputChange}
                         onKeyPress={handleKeyPress}
                         onBlur={handleBlur}
+                        style={{
+                          width: "100px",
+                        }}
                       />
                     ) : (
                       record.description
                     )}
                   </TableCell>
 
+                {/* CATEGORY INFO CELL IN TABLE*/}
                   <TableCell>
                     {editingId === record.id ? (
                       <FormControl size="small" fullWidth>
@@ -469,6 +601,9 @@ useEffect(() => {
                           onChange={handleEditInputChange}
                           onBlur={handleBlur}
                           displayEmpty
+                          style={{
+                            width: "100px",
+                          }}
                         >
                           <MenuItem value="">
                             <em>None</em>
@@ -488,13 +623,15 @@ useEffect(() => {
                     )}
                   </TableCell>
 
-                  <TableCell></TableCell>
+                
                   <TableCell style={{ align: "right" }}>
                     <DeleteIcon
                       onClick={() => handleDeleteRecord(record.id)}
                       style={{ cursor: "pointer" }}
+                      
                     />
                   </TableCell>
+
                 </TableRow>
               ))}
             </TableBody>
@@ -511,7 +648,6 @@ useEffect(() => {
           margin: "20px",
         }}
       >
-
         <TextField
           name="amount"
           label="Amount"
@@ -538,7 +674,10 @@ useEffect(() => {
           style={{ width: "15%", marginRight: "10px", height: "20px" }} // You can adjust the width as needed
         />
 
-        <FormControl  style={{ width: "15%", marginRight: "10px", height: "20px" }} fullWidth>
+        <FormControl
+          style={{ width: "15%", marginRight: "10px", height: "20px" }}
+          fullWidth
+        >
           <InputLabel id="category-select-label">Category</InputLabel>
           <Select
             labelId="category-select-label"
@@ -560,7 +699,9 @@ useEffect(() => {
         </FormControl>
 
         <FormControl
-        error={formErrors.type} required fullWidth
+          error={formErrors.type}
+          required
+          fullWidth
           style={{ width: "15%", marginRight: "10px", height: "20px" }}
         >
           <InputLabel>Type</InputLabel>
@@ -570,8 +711,8 @@ useEffect(() => {
             label="Type"
             onChange={handleInputChange}
             required
-  error={formErrors.type}
-  helperText={formErrors.type ? "Type is required" : ""}
+            error={formErrors.type}
+            helperText={formErrors.type ? "Type is required" : ""}
           >
             <MenuItem value="INCOME">INCOME</MenuItem>
             <MenuItem value="EXPENSE">EXPENSE</MenuItem>
