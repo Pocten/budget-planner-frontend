@@ -12,8 +12,12 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  Snackbar,  
-  Alert   
+  Snackbar,
+  Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { DashboardAPIs } from "../../const/APIs";
@@ -31,13 +35,20 @@ export default function UsersAccess() {
   const jwtToken = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(sessionStorage.getItem('budgetPlanner-login')).jwt : null;
   const userId = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(window.atob(jwtToken.split('.')[1])).userId : null;
 
+  useEffect(() => {
+    fetchMembers();
+  }, [userId, dashboardId, jwtToken]);
+
   const fetchMembers = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await axios.get(DashboardAPIs.getDashboardMembersByDashboardId(userId, dashboardId), {
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
-      setMembers(response.data);
+      setMembers(response.data.map(member => ({
+        ...member,
+        accessLevel: member.accessLevel || 'VIEWER'
+      })));
     } catch (error) {
       console.error('Error fetching members:', error);
       setError('Failed to fetch members');
@@ -46,10 +57,6 @@ export default function UsersAccess() {
       setIsLoading(false);
     }
   }, [userId, dashboardId, jwtToken]);
-
-  useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
 
   const handleAddMember = async () => {
     if (!userInput) return;
@@ -71,7 +78,45 @@ export default function UsersAccess() {
     }
   };
 
-  const handleDeleteMember = async (member) => {
+  const handleChangeAccessLevel = async (member, newAccessLevel) => {
+    const changeAccessUrl = `${DashboardAPIs.getDashboardMembersByDashboardId(userId, dashboardId)}/${member.userName}/changeAccess`;
+
+    console.log("Attempting to change access level to:", newAccessLevel);
+    console.log("Sending to URL:", changeAccessUrl);
+
+    try {
+        const response = await axios.put(changeAccessUrl, JSON.stringify(newAccessLevel), {
+            headers: {
+                Authorization: `Bearer ${jwtToken}`,
+                'Content-Type': 'application/json' 
+            }
+        });
+
+        console.log("Access level changed successfully:", response.data);
+
+        const updatedMembers = members.map(m => {
+            if (m.id === member.id) {
+                return { ...m, accessLevel: newAccessLevel };
+            }
+            return m;
+        });
+
+        setMembers(updatedMembers); 
+        fetchMembers();
+    } catch (error) {
+        console.error('Error changing access level:', error.response ? error.response.data : error);
+    }
+};
+
+
+const handleDeleteMember = async (member) => {
+    console.log("Deleting member:", member); // Log to see what is received
+  
+    if (!member || (!member.userEmail && !member.userName)) {
+      console.error('Member data is incomplete:', member);
+      return;
+    }
+  
     if (!window.confirm(`Are you sure you want to remove ${member.userEmail || member.userName}?`)) return;
     setIsLoading(true);
     const deleteMemberUrl = `${DashboardAPIs.getDashboardMembersByDashboardId(userId, dashboardId)}/remove`;
@@ -85,7 +130,7 @@ export default function UsersAccess() {
       const result = await axios({
         method: 'delete',
         url: deleteMemberUrl,
-        data: payload, 
+        data: payload, // Sending payload in the body of a DELETE request
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
       console.log("Member removed successfully", result.data);
@@ -100,9 +145,9 @@ export default function UsersAccess() {
     } finally {
       setIsLoading(false);
       fetchMembers();
-
     }
   };
+  
 
   const handleGenerateInviteLink = async () => {
     setIsLoading(true);
@@ -117,7 +162,6 @@ export default function UsersAccess() {
       setIsLoading(false);
     }
   };
-  
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
@@ -126,7 +170,7 @@ export default function UsersAccess() {
   return (
     <>
       <DashboardNavbar />
-      <Container maxWidth="sm" style={{ marginTop: '180px' }}>
+      <Container maxWidth="sm" style={{ marginTop: "180px" }}>
         <Typography variant="h6">Manage Dashboard Access</Typography>
         {isLoading ? (
           <CircularProgress />
@@ -140,17 +184,31 @@ export default function UsersAccess() {
               margin="normal"
               variant="outlined"
             />
-            <Button variant="contained" color="primary" onClick={handleAddMember} disabled={!userInput}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddMember}
+              disabled={!userInput}
+            >
               Add Member
             </Button>
-            <Button variant="contained" color="secondary" onClick={handleGenerateInviteLink} style={{ marginLeft: 10 }}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleGenerateInviteLink}
+              style={{ marginLeft: 10 }}
+            >
               Generate Invite Link
             </Button>
             {inviteLink && (
               <TextField
                 fullWidth
                 label="Invite Link"
-                value={DashboardAPIs.generateInviteLinkByDashboardId(dashboardId)+"/use/"+inviteLink}
+                value={
+                  DashboardAPIs.generateInviteLinkByDashboardId(dashboardId) +
+                  "/use/" +
+                  inviteLink
+                }
                 margin="normal"
                 variant="outlined"
                 InputProps={{
@@ -159,12 +217,29 @@ export default function UsersAccess() {
                 helperText="Copy this link and send it to someone to join the dashboard."
               />
             )}
-            <List>
+           <List>
   {members.map((member) => (
-    <ListItem key={member.id}>
+    <ListItem key={member.id} divider>
       <ListItemText primary={member.userEmail || member.userName} />
-      <ListItemSecondaryAction>
-        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteMember(member)}>
+      <ListItemSecondaryAction style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+          <InputLabel>Access Level</InputLabel>
+          <Select
+            value={member.accessLevel}
+            onChange={(e) => handleChangeAccessLevel(member, e.target.value)}
+            label="Access Level"
+          >
+            <MenuItem value="NONE">None</MenuItem>
+            <MenuItem value="VIEWER">Viewer</MenuItem>
+            <MenuItem value="EDITOR">Editor</MenuItem>
+            <MenuItem value="OWNER">Owner</MenuItem>
+          </Select>
+        </FormControl>
+        <IconButton
+          edge="end"
+          aria-label="delete"
+          onClick={() => handleDeleteMember(member)}
+        >
           <DeleteIcon />
         </IconButton>
       </ListItemSecondaryAction>
@@ -172,8 +247,18 @@ export default function UsersAccess() {
   ))}
 </List>
 
-            <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-              <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+
+
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={6000}
+              onClose={handleCloseSnackbar}
+            >
+              <Alert
+                onClose={handleCloseSnackbar}
+                severity="error"
+                sx={{ width: "100%" }}
+              >
                 {error}
               </Alert>
             </Snackbar>

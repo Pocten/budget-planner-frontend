@@ -73,17 +73,18 @@ export default function FinancialGoals() {
                   <ListItem key={financialGoal.id}>
                     <ListItemText
                       primary={financialGoal.title}
-                      secondary={financialGoal.targetAmount}
-                    />
-                    <React.Fragment>
-                          <div>Target Amount: ${financialGoal.targetAmount}</div>
-                          <div>
-                            Deadline :{" "}
-                            {new Date(financialGoal.deadline).toLocaleDateString()}
-                          </div>
-                          <div>Current Amount: ${financialGoal.currentAmount}</div>
+                      secondary= {<React.Fragment>
+                      <div>Target Amount: ${financialGoal.targetAmount}</div>
+                      <div>Current Amount: ${financialGoal.currentAmount}</div>
+                      <div>
+                        Deadline :{" "}
+                        {new Date(financialGoal.deadline).toLocaleDateString()}
+                      </div>
+                      
 
-                        </React.Fragment>
+                    </React.Fragment>
+                   }
+                   />
                     <ListItemSecondaryAction>
                       <IconButton edge="end" aria-label="delete">
                         <DeleteIcon
