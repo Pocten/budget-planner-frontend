@@ -16,6 +16,7 @@ export const DashboardAPIs = {
     delete: () => `${BASE_URL}/v1/dashboards`,
     getUserFinancialRecordsByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-records`,
     getFinancialRecordById: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-records/${id}`,
+    getDashboardFinancialGoalIdByDashboardId: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/financial-goals/${id}`,
     getDashboardCategoriesByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/categories`,
     getDashboardCategoryByCategoryId: (dashboardId, id) => `${BASE_URL}/v1/dashboards/${dashboardId}/categories/${id}`,
     getDashboardTagsByDashboardId: (dashboardId) => `${BASE_URL}/v1/dashboards/${dashboardId}/tags`,
