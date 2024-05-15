@@ -45,6 +45,7 @@ export default function FinancialGoals() {
         DashboardAPIs.getDashboardFinancialGoalByDashboardId(dashboardId),
         {
           headers: { Authorization: `Bearer ${jwtToken}` },
+          'Content-Type': 'application/json' 
         }
       );
       setFinancialGoals(response.data);
