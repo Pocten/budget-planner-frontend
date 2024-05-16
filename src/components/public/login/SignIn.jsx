@@ -37,7 +37,7 @@ export const SignIn = () => {
         await axios.post(UserAPIs.login, userDetails).then(res=> {
             console.log("Login Success", res)
             sessionStorage.setItem("budgetPlanner-login",JSON.stringify(res.data))
-            navigate("/")
+            navigate("/dashboards")
             window.location.reload()
         }).catch(err=> {
             setLoginFailed(true)
