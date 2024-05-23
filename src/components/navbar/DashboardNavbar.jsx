@@ -20,7 +20,7 @@ export const DashboardNavbar = () => {
                             className="navbar background navbar-expand-lg blur blur-rounded top-0 z-index-1020 shadow position-absolute my-3 py-2 start-1 end-0 mx-3" id="secondNavbar">
                             <div className="container-fluid font text-bold">
                                 
-                            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#secondNavbarCollapse" aria-controls="secondNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation" id="secondNavbar">
+                            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#secondNavbarCollapse" aria-controls="secondNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation" id="secondNavbar">
 
                                   <span className="navbar-toggler-icon mt-2">
                                     <span className="navbar-toggler-bar bar1"/>

@@ -14,21 +14,22 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import TextField from '@mui/material/TextField';
+
 import {DashboardAPIs} from "../../const/APIs";
 import {
   CircularProgress,
   Container,
   Typography,
-  TextField,
   Button
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Chip from '@mui/material/Chip';
 
 export default function Dashboard() {
 
   const navigate = useNavigate();
   const { dashboardId } = useParams();
+
   const [isLoading, setIsLoading] = useState(true);
   const [financialRecords, setFinancialRecords] = useState([]);
   const [dashboard, setDashboard] = useState(null);
@@ -41,13 +42,9 @@ export default function Dashboard() {
     type: "",
     description: "",
   });
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [categories, setCategories] = useState([]);
-  const [tags, setTags] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
 
   const [formErrors] = useState({
     amount: false,
@@ -59,6 +56,9 @@ export default function Dashboard() {
   const jwtToken = sessionStorage.getItem("budgetPlanner-login")
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
     : null;
+
+    const userId = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(window.atob(jwtToken.split('.')[1])).userId : null;
+
 
     const fetchFinancialRecords = useCallback(async () => {
       setIsLoading(true);
@@ -103,14 +103,14 @@ export default function Dashboard() {
         return;
       }
       try {
-        const response = await axios.get(DashboardAPIs.getDashboardById(dashboardId), {
+        const response = await axios.get(DashboardAPIs.getUserDashboardById(userId, dashboardId), {
           headers: { Authorization: `Bearer ${jwtToken}` },
         });
         setDashboard(response.data);
       } catch (error) {
         console.error('Error fetching dashboard details:', error);
       }
-    }, [dashboardId, jwtToken, navigate]);
+    }, [dashboardId, userId, jwtToken, navigate]);
     useEffect(() => {
       fetchDashboardDetails();
     }, [fetchDashboardDetails]);
@@ -170,39 +170,11 @@ export default function Dashboard() {
     }));
   };
 
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-  };
-
-  const handleCategoryChange = (event) => {
-    const category = event.target.value;
-    setSelectedCategory(category);
-  };
-
-  const handleTagChange = (event) => {
-    const {
-        target: { value },
-    } = event;
-    setSelectedTags(
-        // On autofill we get a stringified value.
-        typeof value === 'string' ? value.split(',') : value
-    );
-};
 
 
   
 
-  const filteredRecords = financialRecords.filter((record) => {
-    const dateMatch = selectedMonth
-      ? new Date(record.date).getMonth() === parseInt(selectedMonth, 10) - 1
-      : true;
-  
-    const categoryMatch = selectedCategory
-      ? record.category?.id === selectedCategory
-      : true;
-  
-    return dateMatch && categoryMatch;
-  });
+
   
 
   
@@ -281,12 +253,10 @@ export default function Dashboard() {
     }
   
     const categoryObject = categories.find(cat => cat.id === editFormData.categoryId);
-    const tagObject = tags.find(tag => tag.id === editFormData.tagId);
 
     const dataToSubmit = {
       ...editFormData,
       category: categoryObject ? { id: categoryObject.id } : null,
-      tag: tagObject ? { id: tagObject.id } : null,
 
     };
   
@@ -467,9 +437,7 @@ export default function Dashboard() {
                 <TableCell  style={{
                          width:"80px"
                           }}>Category</TableCell>
-                {/* <TableCell  style={{
-                         width:"150px"
-                          }}>Tag</TableCell> */}
+
                 <TableCell  style={{
                          width:"20px"
                           }}>Delete</TableCell>
@@ -477,7 +445,7 @@ export default function Dashboard() {
             </TableHead>
 
             <TableBody>
-              {filteredRecords.map((record) => (
+              {financialRecords.map((record) => (
                 <TableRow
                   key={record.id}
                   onDoubleClick={() => handleEditClick(record)}
@@ -486,7 +454,6 @@ export default function Dashboard() {
                     "&:hover": { backgroundColor: "#f0f0f0" },
                   }}
                 >
-
                  {/* DATE CELL INFO IN TABLE */}
                  <TableCell>
   {editingId === record.id ? (
@@ -515,26 +482,22 @@ export default function Dashboard() {
                   {/* AMOUNT INFO CELL IN TABLE*/}
                   <TableCell>
                     {editingId === record.id ? (
-                      <TextField
-                        name="amount"
-                        type="number"
-                        value={editFormData.amount}
-                        onChange={handleEditInputChange}
-                        onKeyPress={handleKeyPress}
-                        onBlur={handleBlur}
-                        inputProps={{ min: "0.01", step: "0.01" }} // Enforces minimum value and step
-                        style={{
-                          color:
-                            editFormData.type === "INCOME" ? "green" : "red",
-                          width: "60px",
-                        }}
-                        error={parseFloat(editFormData.amount) <= 0} // Correctly parse the amount as a float before comparing
-                        helperText={
-                          parseFloat(editFormData.amount) <= 0
-                            ? "Only numbers over 0 are possible"
-                            : ""
-                        }
-                      />
+                     <TextField
+                     name="amount"
+                     type="number"
+                     value={editFormData.amount}
+                     onChange={handleEditInputChange}
+                     onKeyPress={handleKeyPress}
+                     onBlur={handleBlur}
+                     inputProps={{ min: "0.01", step: "0.01" }} // Enforces minimum value and step
+                     style={{
+                       color: editFormData.type === "INCOME" ? "green" : "red",
+                       width: "60px",
+                     }}
+                     error={parseFloat(editFormData.amount) <= 0}
+                     helperText={parseFloat(editFormData.amount) <= 0 ? "Only numbers over 0 are possible" : ""}
+                   />
+                   
                     ) : (
                       // Display mode: Show amount with color and symbol based on type
                       <span
