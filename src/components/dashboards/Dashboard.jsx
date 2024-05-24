@@ -341,10 +341,8 @@ export default function Dashboard() {
                 }}
               >
                 Your budget from:
-                {new Date(budget.startDate).toLocaleDateString()} till
-                {new Date(budget.endDate).toLocaleDateString()} is $
-                {budget.totalAmount}. You have ${remainingBudget.toFixed(2)}
-                left.
+                {new Date(budget.startDate).toLocaleDateString()} till  {new Date(budget.endDate).toLocaleDateString()} is $
+                {budget.totalAmount}. You have ${remainingBudget.toFixed(2)} left.
               </Typography>
             );
           })}
