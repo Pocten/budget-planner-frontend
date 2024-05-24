@@ -235,53 +235,64 @@ const handleEditClick = (budget) => {
             </div>
           )}
 
-          <div style={{ marginTop: "20px" }}>
-            <TextField
-              label="Title"
-              name="title"
-              value={newBudget.title}
-              onChange={handleInputChange}
-              margin="normal"
-              variant="outlined"
-            />
-            <TextField
-              label="TotalAmount"
-              name="totalAmount"
-              value={newBudget.totalAmount}
-              onChange={handleInputChange}
-              margin="normal"
-              variant="outlined"
-            />
-            <TextField
-              label="Start Date"
-              name="startDate"
-              type="date"
-              value={newBudget.startDate}
-              onChange={handleInputChange}
-              margin="normal"
-              variant="outlined"
-              InputLabelProps={{ shrink: true }} // Ensures the label doesn't overlap with the value when a date is selected
-            />
-            <TextField
-              label="End Date"
-              name="endDate"
-              type="date"
-              value={newBudget.endDate}
-              onChange={handleInputChange}
-              margin="normal"
-              variant="outlined"
-              InputLabelProps={{ shrink: true }} // Similarly, ensures proper label placement
-            />
+<div
+  style={{
+    display: 'flex',
+    alignItems: 'center', // Align items horizontally in the center
+    marginTop: '20px',
+    gap: '10px', // Add gap between elements
+  }}
+>
+  <TextField
+    label="Title"
+    name="title"
+    value={newBudget.title}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    style={{ flex: 1 }} // Allow the text fields to flex and take up available space
+  />
+  <TextField
+    label="Total Amount"
+    name="totalAmount"
+    value={newBudget.totalAmount}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    style={{ flex: 1 }} // Allow the text fields to flex and take up available space
+  />
+  <TextField
+    label="Start Date"
+    name="startDate"
+    type="date"
+    value={newBudget.startDate}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    InputLabelProps={{ shrink: true }} // Ensures the label doesn't overlap with the value when a date is selected
+    style={{ flex: 1 }} // Allow the text fields to flex and take up available space
+  />
+  <TextField
+    label="End Date"
+    name="endDate"
+    type="date"
+    value={newBudget.endDate}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    InputLabelProps={{ shrink: true }} // Similarly, ensures proper label placement
+    style={{ flex: 1 }} // Allow the text fields to flex and take up available space
+  />
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={handleAddBudget}
+    style={{ height: '56px' }} // Adjust the height to match the text fields
+  >
+    Create
+  </Button>
+</div>
 
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddBudget}
-              style={{ marginLeft: "10px" }}
-            >
-              Add New Budget
-            </Button>
-          </div>
         </Container>
       </>
     );

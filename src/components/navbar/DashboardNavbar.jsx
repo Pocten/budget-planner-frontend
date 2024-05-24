@@ -1,15 +1,44 @@
-import React from 'react';
-import '../../assets/css/nucleo-icons.css'
-import '../../assets/css/nucleo-svg.css'
-import '../../assets/css/soft-ui-dashboard.css?v=1.0.3'
-import {Link} from "react-router-dom";
+import React, { useState, useEffect, useCallback } from 'react';
+import '../../assets/css/nucleo-icons.css';
+import '../../assets/css/nucleo-svg.css';
+import '../../assets/css/soft-ui-dashboard.css?v=1.0.3';
+import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-
+import axios from 'axios';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { DashboardAPIs } from '../../const/APIs';
+
 import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 export const DashboardNavbar = () => {
     const { dashboardId } = useParams();
+    const [dashboardTitle, setDashboardTitle] = useState('');
+    const jwtToken = sessionStorage.getItem('budgetPlanner-login')
+    ? JSON.parse(sessionStorage.getItem('budgetPlanner-login')).jwt
+    : null;
+    const userId = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(window.atob(jwtToken.split('.')[1])).userId : null;
+    const [isLoading, setIsLoading] = useState(true);
+
+
+
+    const fetchDashboardDetails = useCallback(async () => {
+        setIsLoading(true);
+        try {
+          const response = await axios.get(
+            DashboardAPIs.getUserDashboardById(userId,dashboardId),
+            { headers: { Authorization: `Bearer ${jwtToken}` } }
+          );
+          setDashboardTitle(response.data.title);
+        } catch (error) {
+          console.error("Error fetching dashboard records", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }, [dashboardId, jwtToken]);
+      useEffect(() => {
+        fetchDashboardDetails();
+    }, [fetchDashboardDetails]);
+    
 
   return (
     <>
@@ -19,7 +48,9 @@ export const DashboardNavbar = () => {
                         <nav
                             className="navbar background navbar-expand-lg blur blur-rounded top-0 z-index-1020 shadow position-absolute my-3 py-2 start-1 end-0 mx-3" id="secondNavbar">
                             <div className="container-fluid font text-bold">
-                                
+                            <span className="navbar-brand">
+                                    {dashboardTitle || 'Loading...'}
+                                </span>
                             <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#secondNavbarCollapse" aria-controls="secondNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation" id="secondNavbar">
 
                                   <span className="navbar-toggler-icon mt-2">

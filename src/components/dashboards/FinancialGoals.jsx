@@ -294,51 +294,62 @@ export default function FinancialGoals() {
           </div>
         )}
 
-        <div style={{ marginTop: "20px" }}>
-          <TextField
-            label="Title"
-            name="title"
-            value={newFinancialGoal.title}
-            onChange={handleInputChange}
-            margin="normal"
-            variant="outlined"
-          />
-          <TextField
-            label="TargetlAmount"
-            name="targetAmount"
-            value={newFinancialGoal.targetAmount}
-            onChange={handleInputChange}
-            margin="normal"
-            variant="outlined"
-          />
-          <TextField
-            label="CurrentAmount"
-            name="currentAmount"
-            value={newFinancialGoal.currentAmount}
-            onChange={handleInputChange}
-            margin="normal"
-            variant="outlined"
-          />
-          <TextField
-  label="Deadline"
-  name="deadline"
-  type="date"
-  value={newFinancialGoal.deadline}
-  onChange={handleInputChange}
-  margin="normal"
-  variant="outlined"
-  InputLabelProps={{ shrink: true }} // Important for properly displaying the label
-/>
+<div
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '20px',
+    gap: '10px',
+  }}
+>
+  <TextField
+    label="Title"
+    name="title"
+    value={newFinancialGoal.title}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    style={{ flex: 1 }}
+  />
+  <TextField
+    label="Target Amount"
+    name="targetAmount"
+    value={newFinancialGoal.targetAmount}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    style={{ flex: 1 }}
+  />
+  <TextField
+    label="Current Amount"
+    name="currentAmount"
+    value={newFinancialGoal.currentAmount}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    style={{ flex: 1 }}
+  />
+  <TextField
+    label="Deadline"
+    name="deadline"
+    type="date"
+    value={newFinancialGoal.deadline}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    InputLabelProps={{ shrink: true }}
+    style={{ flex: 1 }}
+  />
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={handleAddFinancialGoal}
+    style={{ height: '56px' }}
+  >
+    Create
+  </Button>
+</div>
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddFinancialGoal}
-            style={{ marginLeft: "10px" }}
-          >
-            Add New Financial Goal
-          </Button>
-        </div>
       </Container>
     </>
   );

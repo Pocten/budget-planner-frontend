@@ -193,32 +193,41 @@ fetchCategoriesAndRatings();
                         </List>
                     </div>
                 )}
-                <div style={{ marginTop: '20px' }}>
-                    <TextField
-                        label="Name"
-                        name="name"
-                        value={newCategory.name}
-                        onChange={handleInputChange}
-                        margin="normal"
-                        variant="outlined"
-                    />
-                    <TextField
-                        label="Description"
-                        name="description"
-                        value={newCategory.description}
-                        onChange={handleInputChange}
-                        margin="normal"
-                        variant="outlined"
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleAddCategory}
-                        style={{ marginLeft: '10px' }}
-                    >
-                        Add New Category
-                    </Button>
-                </div>
+                <div
+  style={{
+    display: 'flex',
+    alignItems: 'center', // Align items horizontally in the center
+    marginTop: '20px'
+  }}
+>
+  <TextField
+    label="Name"
+    name="name"
+    value={newCategory.name}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    style={{ marginRight: '10px' }} // Add some right margin to separate the text fields
+  />
+  <TextField
+    label="Description"
+    name="description"
+    value={newCategory.description}
+    onChange={handleInputChange}
+    margin="normal"
+    variant="outlined"
+    style={{ marginRight: '10px' }} // Add some right margin to separate the text fields
+  />
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={handleAddCategory}
+    style={{ height: '52px' }} // Adjust the height to match the text fields
+  >
+    Create
+  </Button>
+</div>
+
             </Container>
         </>
     );

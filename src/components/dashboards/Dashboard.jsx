@@ -617,100 +617,98 @@ export default function Dashboard() {
       </Paper>
 
       <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          alignItems: "flex-end",
-          margin: "20px",
-        }}
-      >
-        <TextField
-          name="amount"
-          label="Amount"
-          type="number"
-          value={newRecord.amount}
-          onChange={handleInputChange}
-          inputProps={{ min: "0.01", step: "0.01" }} // This prevents negative numbers and allows only positive values greater than 0
-          style={{ width: "15%", marginRight: "10px", height: "20px" }}
-          error={parseFloat(newRecord.amount) <= 0}
-          helperText={
-            parseFloat(newRecord.amount) <= 0
-              ? "Only numbers over 0 are possible"
-              : ""
-          }
-          InputProps={{}}
-          required
-        />
+  onSubmit={handleSubmit}
+  style={{
+    display: "flex",
+    justifyContent: "space-around",
+    alignItems: "center", // Changed from "flex-end" to "center" to align items horizontally
+    margin: "30px",
+  }}
+>
+  <TextField
+    name="amount"
+    label="Amount"
+    type="number"
+    value={newRecord.amount}
+    onChange={handleInputChange}
+    inputProps={{ min: "0.01", step: "0.01" }} // This prevents negative numbers and allows only positive values greater than 0
+    style={{ width: "15%", marginRight: "10px" }}
+    error={parseFloat(newRecord.amount) <= 0}
+    helperText={
+      parseFloat(newRecord.amount) <= 0 ? "Only numbers over 0 are possible" : ""
+    }
+    required
+  />
 
-        <TextField
-          name="date"
-          type="date"
-          value={newRecord.date}
-          onChange={handleInputChange}
-          style={{ width: "15%", marginRight: "10px", height: "20px" }} // You can adjust the width as needed
-        />
+  <TextField
+    name="date"
+    type="date"
+    value={newRecord.date}
+    onChange={handleInputChange}
+    style={{ width: "15%", marginRight: "10px" }}
+  />
 
-        <FormControl
-          style={{ width: "15%", marginRight: "10px", height: "20px" }}
-          fullWidth
-        >
-          <InputLabel id="category-select-label">Category</InputLabel>
-          <Select
-            labelId="category-select-label"
-            id="category-select"
-            name="categoryId"
-            value={newRecord.categoryId}
-            onChange={handleInputChange}
-            label="Category"
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {categories.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+  <FormControl
+    style={{ width: "15%", marginRight: "10px" }}
+    fullWidth
+  >
+    <InputLabel id="category-select-label">Category</InputLabel>
+    <Select
+      labelId="category-select-label"
+      id="category-select"
+      name="categoryId"
+      value={newRecord.categoryId}
+      onChange={handleInputChange}
+      label="Category"
+    >
+      <MenuItem value="">
+        <em>None</em>
+      </MenuItem>
+      {categories.map((category) => (
+        <MenuItem key={category.id} value={category.id}>
+          {category.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 
-        <FormControl
-          error={formErrors.type}
-          required
-          fullWidth
-          style={{ width: "15%", marginRight: "10px", height: "20px" }}
-        >
-          <InputLabel>Type</InputLabel>
-          <Select
-            name="type"
-            value={newRecord.type}
-            label="Type"
-            onChange={handleInputChange}
-            required
-            error={formErrors.type}
-            helperText={formErrors.type ? "Type is required" : ""}
-          >
-            <MenuItem value="INCOME">INCOME</MenuItem>
-            <MenuItem value="EXPENSE">EXPENSE</MenuItem>
-          </Select>
-        </FormControl>
-        <TextField
-          name="description"
-          label="Description"
-          value={newRecord.description}
-          onChange={handleInputChange}
-          rows={4}
-          style={{ width: "20%", height: "20px" }} // Adjust the width as needed
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          style={{ width: "15%", marginRight: "10px", height: "50px" }}
-        >
-          Submit
-        </Button>
-      </form>
+  <FormControl
+    error={formErrors.type}
+    required
+    fullWidth
+    style={{ width: "15%", marginRight: "10px" }}
+  >
+    <InputLabel>Type</InputLabel>
+    <Select
+      name="type"
+      value={newRecord.type}
+      label="Type"
+      onChange={handleInputChange}
+      required
+    >
+      <MenuItem value="INCOME">INCOME</MenuItem>
+      <MenuItem value="EXPENSE">EXPENSE</MenuItem>
+    </Select>
+  </FormControl>
+
+  <TextField
+    name="description"
+    label="Description"
+    value={newRecord.description}
+    onChange={handleInputChange}
+    rows={4}
+    style={{ width: "20%", marginRight: "10px" }}
+  />
+
+  <Button
+    type="submit"
+    variant="contained"
+    style={{ width: "15%", height: "56px" }} // Adjusted the height to align with text fields
+  >
+    Create
+  </Button>
+</form>
+
       <Outlet />
     </>
   );
