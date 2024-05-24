@@ -1,32 +1,37 @@
-import React, { useEffect } from 'react'; // Import useEffect
-import {Navbar} from "./components/navbar/Navbar";
-import {routesAfterLogin, routesBeforeLogin} from "./components/routes/routes";
-import {Footer} from "./components/footer/Footer";
-import { useNavigate } from 'react-router-dom';
-import './services/authServices';
+import React, { useEffect } from "react"; // Import useEffect
+import { Navbar } from "./components/navbar/Navbar";
+import {
+  routesAfterLogin,
+  routesBeforeLogin,
+} from "./components/routes/routes";
+import { Footer } from "./components/footer/Footer";
+import { useNavigate } from "react-router-dom";
+import "./services/authServices";
 
 export const App = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const onTokenExpired = () => {
-            alert('Your session has expired, please log in again.');
-            navigate('/login'); 
-            sessionStorage.clear(); 
-        };
+  useEffect(() => {
+    const onTokenExpired = () => {
+      alert("Your session has expired, please log in again.");
+      navigate("/login");
+      sessionStorage.clear();
+    };
 
-        window.handleSessionTimeout = onTokenExpired; 
-    }, [navigate]);
+    window.handleSessionTimeout = onTokenExpired;
+  }, [navigate]);
 
-    return (
+  return (
+    <>
+      {sessionStorage.getItem("budgetPlanner-login") !== null ? (
         <>
-            {
-                sessionStorage.getItem("budgetPlanner-login") !== null ? <>
-                    <Navbar/>
-                    {routesAfterLogin()}
-                    <Footer/>
-                </> : routesBeforeLogin()
-            }
+          <Navbar />
+          {routesAfterLogin()}
+          <Footer />
         </>
-    )
-}
+      ) : (
+        routesBeforeLogin()
+      )}
+    </>
+  );
+};

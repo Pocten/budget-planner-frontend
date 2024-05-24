@@ -49,7 +49,7 @@ export const DashboardNavbar = () => {
                             className="navbar background navbar-expand-lg blur blur-rounded top-0 z-index-1020 shadow position-absolute my-3 py-2 start-1 end-0 mx-3" id="secondNavbar">
                             <div className="container-fluid font text-bold">
                             <span className="navbar-brand">
-                                    You are on dashboard: {dashboardTitle} 
+                                    {dashboardTitle} 
                                 </span>
 
                              
