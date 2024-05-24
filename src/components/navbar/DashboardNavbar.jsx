@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { DashboardAPIs } from '../../const/APIs';
-
+import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import StackedLineChartIcon from '@mui/icons-material/StackedLineChart';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 export const DashboardNavbar = () => {
@@ -93,7 +93,7 @@ export const DashboardNavbar = () => {
                                         <li className="nav-item">
                                             <span className="nav-link me-2 font-weight-bolder">
                                                 <i className="fa fa-user opacity-6 text-dark me-1"/>
-                                                <Link to={`/dashboard/${dashboardId}/users-access`}><EqualizerIcon/> Users Access </Link>
+                                                <Link to={`/dashboard/${dashboardId}/users-access`}><AccessibilityIcon/> Users Access </Link>
                                             </span>
                                         </li>
                                         
