@@ -31,7 +31,6 @@ export default function Dashboard() {
                 setDashboard(response.data);
             } catch (error) {
                 console.error("Failed to fetch dashboard data", error);
-                // Handle error appropriately
             }
         };
 
@@ -45,7 +44,7 @@ export default function Dashboard() {
     return (
         <>
       <DashboardNavbar />
-      <Outlet /> {/* This will render the matched nested route */}
+      <Outlet /> 
     </>
     );
     };

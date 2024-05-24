@@ -47,7 +47,9 @@ export default function UsersAccess() {
       });
       setMembers(response.data.map(member => ({
         ...member,
-        accessLevel: member.accessLevel || 'VIEWER'
+        accessLevel: member.accessLevel || 'VIEWER',
+        role: member.role || 'NONE'
+
       })));
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -148,6 +150,40 @@ const handleDeleteMember = async (member) => {
     }
   };
   
+  const handleChangeRole = async (member, newRole) => {
+    if (!member.userId) {
+        console.error('Member ID is undefined:', member);
+        return;
+    }
+
+    const changeRoleUrl = `https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${member.userId}/dashboards/${dashboardId}/assign-role`;
+
+    console.log("Attempting to change role to:", newRole);
+    console.log("Sending to URL:", changeRoleUrl);
+
+    try {
+        const response = await axios.post(changeRoleUrl, { role: newRole }, {
+            headers: {
+                Authorization: `Bearer ${jwtToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log("Role changed successfully:", response.data);
+
+        const updatedMembers = members.map(m => {
+            if (m.userId === member.userId) {
+                return { ...m, role: newRole };
+            }
+            return m;
+        });
+
+        setMembers(updatedMembers);
+        fetchMembers();
+    } catch (error) {
+        console.error('Error changing role:', error.response ? error.response.data : error);
+    }
+};
 
   const handleGenerateInviteLink = async () => {
     setIsLoading(true);
@@ -217,37 +253,51 @@ const handleDeleteMember = async (member) => {
                 helperText="Copy this link and send it to someone to join the dashboard."
               />
             )}
-           <List>
-  {members.map((member) => (
-    <ListItem key={member.id} divider>
-      <ListItemText primary={member.userEmail || member.userName} />
-      <ListItemSecondaryAction style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
-          <InputLabel>Access Level</InputLabel>
-          <Select
-            value={member.accessLevel}
-            onChange={(e) => handleChangeAccessLevel(member, e.target.value)}
-            label="Access Level"
-          >
-            <MenuItem value="NONE">None</MenuItem>
-            <MenuItem value="VIEWER">Viewer</MenuItem>
-            <MenuItem value="EDITOR">Editor</MenuItem>
-            <MenuItem value="OWNER">Owner</MenuItem>
-          </Select>
-        </FormControl>
-        <IconButton
-          edge="end"
-          aria-label="delete"
-          onClick={() => handleDeleteMember(member)}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </ListItemSecondaryAction>
-    </ListItem>
-  ))}
-</List>
-
-
+            <List>
+              {members.map((member) => (
+                <ListItem key={member.id} divider>
+                  <ListItemText primary={member.userEmail || member.userName} />
+                  <ListItemSecondaryAction style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+                      <InputLabel>Access Level</InputLabel>
+                      <Select
+                        value={member.accessLevel}
+                        onChange={(e) => handleChangeAccessLevel(member, e.target.value)}
+                        label="Access Level"
+                      >
+                        <MenuItem value="NONE">None</MenuItem>
+                        <MenuItem value="VIEWER">Viewer</MenuItem>
+                        <MenuItem value="EDITOR">Editor</MenuItem>
+                        <MenuItem value="OWNER">Owner</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+                      <InputLabel>Role</InputLabel>
+                      <Select
+                        value={member.role}
+                        onChange={(e) => handleChangeRole(member, e.target.value)}
+                        label="Role"
+                      >
+                        <MenuItem value="ENTREPRENEUR">Entrepreneur</MenuItem>
+                        <MenuItem value="EMPLOYEE">Employee</MenuItem>
+                        <MenuItem value="STUDENT">Student</MenuItem>
+                        <MenuItem value="RETIREE">Retiree</MenuItem>
+                        <MenuItem value="HOUSEMAKER">Housemaker</MenuItem>
+                        <MenuItem value="CHILD">Child</MenuItem>
+                        <MenuItem value="NONE">None</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleDeleteMember(member)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
 
             <Snackbar
               open={openSnackbar}

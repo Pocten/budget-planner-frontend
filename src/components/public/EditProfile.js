@@ -5,8 +5,7 @@ import {useState} from "react";
 import axios from "axios";
 import { useEffect } from "react";
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import { BASE_URL } from "../../const/const";
-import { UserAPIs } from "../../const/APIs";
+
 
 export default function EditProfile() {
     const navigate = useNavigate();
@@ -109,7 +108,7 @@ export default function EditProfile() {
         const jwtToken = parsedData.jwt; 
     
         try {
-            const response = await axios.delete(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}`, {
+            await axios.delete(`https://budget-planner-backend-c5122df5a273.herokuapp.com/api/v1/users/${userId}`, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}` 
                 }

@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [categories, setCategories] = useState([]);
+  const [userMap, setUserMap] = useState({});
 
   const [formErrors] = useState({
     amount: false,
@@ -52,7 +53,6 @@ export default function Dashboard() {
   });
 
 
-  //const [budgets, setBudgets] = useState({ startDate: '', endDate: '', totalAmount: '' });
   const jwtToken = sessionStorage.getItem("budgetPlanner-login")
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
     : null;
@@ -76,7 +76,7 @@ export default function Dashboard() {
     }, [dashboardId, jwtToken]);
     useEffect(() => {
       fetchFinancialRecords();
-    }, [fetchFinancialRecords]);
+  }, [fetchFinancialRecords, userMap]);
   
     const fetchCategories = useCallback(async () => {
       try {
@@ -93,27 +93,48 @@ export default function Dashboard() {
 
     useEffect(() => {
       fetchCategories();
-    }, [fetchCategories]);  // Ensure fetchCategories doesn't change unnecessarily
+    }, [fetchCategories]);  
     
-    
-
-    const fetchDashboardDetails = useCallback(async () => {
-      if (!jwtToken) {
-        navigate("/login");
-        return;
-      }
+    const fetchUsers = useCallback(async () => {
       try {
-        const response = await axios.get(DashboardAPIs.getUserDashboardById(userId, dashboardId), {
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        });
-        setDashboard(response.data);
+          const response = await axios.get(DashboardAPIs.getDashboardMembersByDashboardId(userId, dashboardId), {
+              headers: { Authorization: `Bearer ${jwtToken}` },
+          });
+          const users = response.data;
+          const userMap = users.reduce((map, user) => {
+              map[user.userId] = user.userName; 
+              return map;
+          }, {});
+          setUserMap(userMap);
       } catch (error) {
-        console.error('Error fetching dashboard details:', error);
+          console.error('Error fetching users:', error);
       }
-    }, [dashboardId, userId, jwtToken, navigate]);
+  }, [jwtToken]);
+  
+  
     useEffect(() => {
-      fetchDashboardDetails();
-    }, [fetchDashboardDetails]);
+      fetchUsers();
+    }, [fetchUsers]);
+
+    // const fetchDashboardDetails = useCallback(async () => {
+    //   if (!jwtToken) {
+    //     navigate("/login");
+    //     return;
+    //   }
+    //   try {
+    //     const response = await axios.get(DashboardAPIs.getUserDashboardById(userId, dashboardId), {
+    //       headers: { Authorization: `Bearer ${jwtToken}` },
+    //     });
+    //     setDashboard(response.data);
+    //   } catch (error) {
+    //     console.log("URL fetching dashboard info" + DashboardAPIs.getUserDashboardById(userId, dashboardId))
+    //     console.error('Error fetching dashboard details:', error);
+    //   }
+    // }, [dashboardId, userId, jwtToken, navigate]);
+
+    // useEffect(() => {
+    //   fetchDashboardDetails();
+    // }, [fetchDashboardDetails]);
 
     const fetchBudgets = useCallback(async () => {
       if (!jwtToken) {
@@ -160,8 +181,6 @@ export default function Dashboard() {
     };
   
 
-  
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewRecord((prevState) => ({
@@ -169,13 +188,6 @@ export default function Dashboard() {
       [name]: value,
     }));
   };
-
-
-
-  
-
-
-  
 
   
   if (isLoading) {
@@ -437,6 +449,7 @@ export default function Dashboard() {
                 <TableCell  style={{
                          width:"80px"
                           }}>Category</TableCell>
+                          <TableCell style={{ width: "100px" }}>Created By</TableCell> {/* New Column */}
 
                 <TableCell  style={{
                          width:"20px"
@@ -586,7 +599,8 @@ export default function Dashboard() {
                     )}
                   </TableCell>
 
-                
+                  <TableCell>    {userMap[record.userId] }
+</TableCell> {/* Display the username */}
                   <TableCell style={{ align: "right" }}>
                     <DeleteIcon
                       onClick={() => handleDeleteRecord(record.id)}

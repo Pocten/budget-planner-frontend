@@ -28,19 +28,13 @@ export const DashboardNavbar = () => {
                                     <span className="navbar-toggler-bar bar3"/>
                                   </span>
                                 </button>
-                                <div class="collapse navbar-collapse" id="secondNavbarCollapse">
+                                <div className="collapse navbar-collapse" id="secondNavbarCollapse">
                                     <ul className="navbar-nav mx-auto">
 
                                     <li className="nav-item">
                                             <span className="nav-link me-2 font-weight-bolder">
                                                 <i className="fa fa-user opacity-6 text-dark me-1"/>
                                                 <Link to={`/dashboard/${dashboardId}/categories`}><EqualizerIcon/> My Categories </Link>
-                                            </span>
-                                        </li>
-                                        <li className="nav-item">
-                                            <span className="nav-link me-2 font-weight-bolder">
-                                                <i className="fa fa-user opacity-6 text-dark me-1"/>
-                                                <Link to={`/dashboard/${dashboardId}/tags`}><EqualizerIcon/> My Tags </Link>
                                             </span>
                                         </li>
                                         <li className="nav-item">

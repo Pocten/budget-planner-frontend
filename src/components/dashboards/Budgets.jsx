@@ -36,7 +36,7 @@ export default function Budgets() {
       } finally {
           setIsLoading(false);
       }
-  }, [dashboardId, jwtToken]); // Dependencies for useCallback
+  }, [dashboardId, jwtToken]); 
   
   useEffect(() => {
     fetchBudgets();

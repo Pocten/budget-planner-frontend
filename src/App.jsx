@@ -11,11 +11,11 @@ export const App = () => {
     useEffect(() => {
         const onTokenExpired = () => {
             alert('Your session has expired, please log in again.');
-            navigate('/login'); // Corrected from navigate.push('/login');
-            sessionStorage.clear(); // Assuming token and user data are in sessionStorage
+            navigate('/login'); 
+            sessionStorage.clear(); 
         };
 
-        window.handleSessionTimeout = onTokenExpired; // Set a global function that can be called on token expiry
+        window.handleSessionTimeout = onTokenExpired; 
     }, [navigate]);
 
     return (
