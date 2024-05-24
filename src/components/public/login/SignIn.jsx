@@ -89,7 +89,7 @@ export const SignIn = () => {
                                             <p className="mb-4 text-sm mx-auto">
                                                 Don't have an account?
                                                 <Link to="/register"
-                                                      className="text-info text-gradient font-weight-bold">Sign
+                                                      className="text-info text-gradient font-weight-bold"> Sign
                                                     up</Link>
                                             </p>
                                         </div>

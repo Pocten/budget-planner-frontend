@@ -9,6 +9,7 @@ export const UserAPIs = {
 
 export const DashboardAPIs = {
     create: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards`,
+    getUserById: (userId) => `${BASE_URL}/v1/users/${userId}`,
     getAllDashboardsByUserId: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards`,
     getAccessibleDashboardsByUserId: (userId) => `${BASE_URL}/v1/users/${userId}/dashboards/accessible`,
     getUserDashboardById: (userId, dashboardId) => `${BASE_URL}/v1/users/${userId}/dashboards/${dashboardId}`,

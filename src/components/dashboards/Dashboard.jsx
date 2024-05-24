@@ -116,25 +116,6 @@ export default function Dashboard() {
       fetchUsers();
     }, [fetchUsers]);
 
-    // const fetchDashboardDetails = useCallback(async () => {
-    //   if (!jwtToken) {
-    //     navigate("/login");
-    //     return;
-    //   }
-    //   try {
-    //     const response = await axios.get(DashboardAPIs.getUserDashboardById(userId, dashboardId), {
-    //       headers: { Authorization: `Bearer ${jwtToken}` },
-    //     });
-    //     setDashboard(response.data);
-    //   } catch (error) {
-    //     console.log("URL fetching dashboard info" + DashboardAPIs.getUserDashboardById(userId, dashboardId))
-    //     console.error('Error fetching dashboard details:', error);
-    //   }
-    // }, [dashboardId, userId, jwtToken, navigate]);
-
-    // useEffect(() => {
-    //   fetchDashboardDetails();
-    // }, [fetchDashboardDetails]);
 
     const fetchBudgets = useCallback(async () => {
       if (!jwtToken) {
@@ -393,16 +374,27 @@ export default function Dashboard() {
         </FormControl> */}
       </div>
 
-          {/* BUDGET INFO ON TOP */}
-          <Container>
-          {Array.isArray(budgets) && budgets.map((budget) => (
-  <Typography key={budget.id} style={{ marginBottom: '10px' }}>
-    Your budget from {new Date(budget.startDate).toLocaleDateString()} till {new Date(budget.endDate).toLocaleDateString()} is ${budget.totalAmount}. You have ${calculateRemainingBudget(budget)} left.
-  </Typography>
-))}
+<Container>
+  {Array.isArray(budgets) && budgets.map((budget) => {
+    const remainingBudget = calculateRemainingBudget(budget);
+    const budgetStatusColor = remainingBudget >= 0 ? 'green' : 'red';
 
-        
-      </Container>
+    return (
+      <Typography 
+        key={budget.id} 
+        style={{ 
+          marginBottom: '10px', 
+          fontSize: '18px', 
+          fontWeight: 'bold', 
+          color: budgetStatusColor 
+        }}
+      >
+        Your budget from {new Date(budget.startDate).toLocaleDateString()} till {new Date(budget.endDate).toLocaleDateString()} is ${budget.totalAmount}. You have ${remainingBudget.toFixed(2)} left.
+      </Typography>
+    );
+  })}
+</Container>
+
 
           {/* FINANCIAL RECORDS TABLE INFO ON TOP */}
       <Paper style={{ width: "100%", overflow: "hidden" }}>
@@ -505,14 +497,13 @@ export default function Dashboard() {
                      inputProps={{ min: "0.01", step: "0.01" }} // Enforces minimum value and step
                      style={{
                        color: editFormData.type === "INCOME" ? "green" : "red",
-                       width: "60px",
+                       width: "90px",
                      }}
                      error={parseFloat(editFormData.amount) <= 0}
                      helperText={parseFloat(editFormData.amount) <= 0 ? "Only numbers over 0 are possible" : ""}
                    />
                    
                     ) : (
-                      // Display mode: Show amount with color and symbol based on type
                       <span
                         style={{
                           color: record.type === "INCOME" ? "green" : "red",
@@ -703,7 +694,7 @@ export default function Dashboard() {
   <Button
     type="submit"
     variant="contained"
-    style={{ width: "15%", height: "56px" }} // Adjusted the height to align with text fields
+    style={{ width: "15%", height: "56px" }} 
   >
     Create
   </Button>

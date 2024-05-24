@@ -1,7 +1,6 @@
 import {Route, Routes} from "react-router-dom";
 import {SignIn} from "../public/login/SignIn";
 import {Register} from "../public/Register";
-import {AboutUs} from "../public/AboutUs";
 import EditProfile from "../public/EditProfile";
 import Dashboard from "../dashboards/Dashboard";
 import ListDashboards from "../dashboards/ListDashboards";
@@ -26,7 +25,6 @@ export const routesAfterLogin = () => {
         <Route path="/dashboard/:dashboardId" element={<Dashboard />} />
         <Route path="/dashboard/:dashboardId" element={<DashboardNavbar />} />
         <Route path="/dashboard/:dashboardId/categories" element={<Categories />} />
-        <Route path={"/about-us"} element={<AboutUs/>}/>
         <Route path={"/edit-profile"} element={<EditProfile/>}/>
         <Route path="/dashboard/:dashboardId/my-budgets" element={<Budgets />} />
         <Route path="/dashboard/:dashboardId/my-financial-goals" element={<FinancialGoals />} />
