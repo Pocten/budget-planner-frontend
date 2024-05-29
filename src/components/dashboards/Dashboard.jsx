@@ -124,8 +124,8 @@ export default function Dashboard() {
           headers: { Authorization: `Bearer ${jwtToken}` },
         }
       );
-      console.log("Budgets fetched:", response.data); // Log to check the structure
-      setBudgets(response.data); // Ensure this is an array
+      console.log("Budgets fetched:", response.data); 
+      setBudgets(response.data); 
     } catch (error) {
       console.error("Error fetching budgets:", error);
     } finally {

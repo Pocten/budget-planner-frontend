@@ -6,12 +6,16 @@ import { DashboardAPIs } from "../../const/APIs";
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // Import icon for creating new dashboard
+import EditIcon from '@mui/icons-material/Edit'; // Import icon for editing dashboard
+import SaveIcon from '@mui/icons-material/Save'; // Import icon for saving dashboard
 
 export default function ListDashboards() {
     const [dashboards, setDashboards] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [openCreateForm, setOpenCreateForm] = useState(false);
     const [newDashboard, setNewDashboard] = useState({ title: '', description: '' });
+    const [editingDashboardId, setEditingDashboardId] = useState(null);
+    const [editFormData, setEditFormData] = useState({ title: '', description: '' });
     const navigate = useNavigate();
     const jwtToken = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(sessionStorage.getItem('budgetPlanner-login')).jwt : null;
     const userId = sessionStorage.getItem('budgetPlanner-login') ? JSON.parse(window.atob(jwtToken.split('.')[1])).userId : null;
@@ -25,6 +29,8 @@ export default function ListDashboards() {
             console.error("Authentication error: No JWT Token or User ID found.");
             return;
         }
+
+        setIsLoading(true);
 
         try {
             const ownedResponse = await axios.get(DashboardAPIs.getAllDashboardsByUserId(userId), {
@@ -56,6 +62,7 @@ export default function ListDashboards() {
     const handleDashboardClick = (dashboardId) => {
         navigate(`/dashboard/${dashboardId}`);
     };
+
     const handleCreateDashboardClose = () => {
         setOpenCreateForm(false);
     };
@@ -68,6 +75,14 @@ export default function ListDashboards() {
         }));
     };
 
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!jwtToken) {
@@ -75,9 +90,6 @@ export default function ListDashboards() {
             return;
         }
 
-        const addMemberUrl = `${DashboardAPIs.create(userId)}`;
-      
-        console.log("Sending to URL:", addMemberUrl);
         try {
             await axios.post(DashboardAPIs.create(userId), newDashboard, {
                 headers: {
@@ -91,6 +103,7 @@ export default function ListDashboards() {
             console.error('Error creating dashboard', error);
         }
     };
+
     const handleDeleteDashboard = async (dashboardId, event) => {
       event.stopPropagation(); // Stop click event from bubbling up
       if (window.confirm('Are you sure you want to delete this dashboard?')) {
@@ -111,6 +124,35 @@ export default function ListDashboards() {
       }
     };
 
+    const handleEditClick = (dashboard, event) => {
+        event.stopPropagation(); // Stop click event from bubbling up
+        setEditingDashboardId(dashboard.id);
+        setEditFormData({
+            title: dashboard.title,
+            description: dashboard.description
+        });
+    };
+
+    const handleSaveEdit = async (dashboardId, event) => {
+        event.stopPropagation(); // Stop click event from bubbling up
+        if (!jwtToken) {
+            console.error("Authentication error: No JWT Token found.");
+            return;
+        }
+
+        try {
+            await axios.put(DashboardAPIs.getUserDashboardById(userId, dashboardId), editFormData, {
+                headers: {
+                    Authorization: `Bearer ${jwtToken}`,
+                },
+            });
+            setEditingDashboardId(null);
+            setEditFormData({ title: '', description: '' });
+            fetchDashboards();
+        } catch (error) {
+            console.error('Error updating dashboard', error);
+        }
+    };
 
     return (
       <Container className="mt-5">
@@ -126,11 +168,9 @@ export default function ListDashboards() {
                     className="card my-2"
                     style={{
                       width: "100%",
-                      cursor: "pointer",
                       boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)",
                       position: "relative",
                     }}
-                    onClick={() => handleDashboardClick(dashboard.id)}
                   >
                     <IconButton
                       onClick={(event) => handleDeleteDashboard(dashboard.id, event)}
@@ -145,9 +185,56 @@ export default function ListDashboards() {
                       <DeleteIcon />
                     </IconButton>
                     <div className="card-body d-flex flex-column">
-                      <h5 className="card-title">{dashboard.title}</h5>
-                      <p className="card-text">{dashboard.description}</p>
-                      <Button variant="contained">Go to Dashboard</Button>
+                      {editingDashboardId === dashboard.id ? (
+                        <>
+                          <TextField
+                            name="title"
+                            value={editFormData.title}
+                            onChange={handleEditInputChange}
+                            fullWidth
+                            variant="standard"
+                          />
+                          <TextField
+                            name="description"
+                            value={editFormData.description}
+                            onChange={handleEditInputChange}
+                            fullWidth
+                            variant="standard"
+                          />
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<SaveIcon />}
+                            onClick={(event) => handleSaveEdit(dashboard.id, event)}
+                            style={{ marginTop: '10px' }}
+                          >
+                            Save
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <h5 className="card-title">{dashboard.title}</h5>
+                          <p className="card-text">{dashboard.description}</p>
+                          <div style={{ marginTop: 'auto' }}>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleDashboardClick(dashboard.id)}
+                              style={{ marginRight: '10px' }}
+                            >
+                              Go to Dashboard
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="secondary"
+                              startIcon={<EditIcon />}
+                              onClick={(event) => handleEditClick(dashboard, event)}
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -209,5 +296,4 @@ export default function ListDashboards() {
         </Dialog>
       </Container>
     );
-
 }
