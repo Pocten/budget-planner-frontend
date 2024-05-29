@@ -27,6 +27,9 @@ export default function Categories() {
   const [isLoading, setIsLoading] = useState(true);
   const [newCategory, setNewCategory] = useState({ name: "", description: "" });
   const [ratings, setRatings] = useState({});
+  const [editMode, setEditMode] = useState(null);
+const [editedCategory, setEditedCategory] = useState({ name: "", description: "" });
+
   const jwtToken = sessionStorage.getItem("budgetPlanner-login")
     ? JSON.parse(sessionStorage.getItem("budgetPlanner-login")).jwt
     : null;
@@ -211,6 +214,37 @@ export default function Categories() {
     }
   };
 
+  const handleDoubleClick = (category) => {
+    setEditMode(category.id);
+    setEditedCategory({ name: category.name, description: category.description });
+  };
+
+  const handleEditInputChange = (event) => {
+    const { name, value } = event.target;
+    setEditedCategory((prev) => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSaveCategory = async (categoryId) => {
+    try {
+      await axios.put(
+        DashboardAPIs.getDashboardCategoryByCategoryId(dashboardId, categoryId),
+        editedCategory,
+        {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        }
+      );
+      setCategories((prev) =>
+        prev.map((category) =>
+          category.id === categoryId ? { ...category, ...editedCategory } : category
+        )
+      );
+      setEditMode(null);
+    } catch (error) {
+      console.error("Error saving the category", error);
+    }
+  };
+  
+
   const handleDeleteCategory = async (categoryId) => {
     if (!jwtToken) {
       console.error("Authentication error: No JWT Token found.");
@@ -249,49 +283,83 @@ export default function Categories() {
           <CircularProgress />
         ) : (
           <div style={{ marginTop: "150px" }}>
-            <List>
-              {categories.map((category) => (
-                <ListItem key={category.id}>
-                  <ListItemText
-                    primary={category.name}
-                    secondary={category.description}
-                  />
-                  <FormControl style={{ margin: "0 20px", width: 100 }}>
-                    <InputLabel id={`rating-label-${category.id}`}>
-                      Rating
-                    </InputLabel>
-                    <Select
-                      labelId={`rating-label-${category.id}`}
-                      value={ratings[category.id]?.myRating || ""}
-                      onChange={(e) =>
-                        handleRateCategory(category.id, e.target.value)
-                      }
-                    >
-                      {[...Array(10).keys()].map((num) => (
-                        <MenuItem key={num + 1} value={num + 1}>
-                          {num + 1}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Typography component={'div'} style={{ margin: "0 10px" }}>
-                    Calculated Rating:{" "}
-                    {ratings[category.id]?.calculatedRating || 0}
-                    <br />
-                    My Rating: {ratings[category.id]?.myRating || 0}
-                  </Typography>
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleDeleteCategory(category.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
+           <List>
+  {categories.map((category) => (
+    <ListItem key={category.id} onDoubleClick={() => handleDoubleClick(category)}>
+      {editMode === category.id ? (
+        <>
+          <TextField
+            name="name"
+            value={editedCategory.name}
+            onChange={handleEditInputChange}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleSaveCategory(category.id);
+              }
+            }}
+            margin="normal"
+            variant="outlined"
+            style={{ marginRight: "10px" }}
+          />
+          <TextField
+            name="description"
+            value={editedCategory.description}
+            onChange={handleEditInputChange}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleSaveCategory(category.id);
+              }
+            }}
+            margin="normal"
+            variant="outlined"
+            style={{ marginRight: "10px" }}
+          />
+        </>
+      ) : (
+        <>
+          <ListItemText
+            primary={category.name}
+            secondary={category.description}
+          />
+          <FormControl style={{ margin: "0 20px", width: 100 }}>
+            <InputLabel id={`rating-label-${category.id}`}>
+              Rating
+            </InputLabel>
+            <Select
+              labelId={`rating-label-${category.id}`}
+              value={ratings[category.id]?.myRating || ""}
+              onChange={(e) =>
+                handleRateCategory(category.id, e.target.value)
+              }
+            >
+              {[...Array(10).keys()].map((num) => (
+                <MenuItem key={num + 1} value={num + 1}>
+                  {num + 1}
+                </MenuItem>
               ))}
-            </List>
+            </Select>
+          </FormControl>
+          <Typography component={'div'} style={{ margin: "0 10px" }}>
+            Calculated Rating:{" "}
+            {ratings[category.id]?.calculatedRating || 0}
+            <br />
+            My Rating: {ratings[category.id]?.myRating || 0}
+          </Typography>
+        </>
+      )}
+      <ListItemSecondaryAction>
+        <IconButton
+          edge="end"
+          aria-label="delete"
+          onClick={() => handleDeleteCategory(category.id)}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </ListItemSecondaryAction>
+    </ListItem>
+  ))}
+</List>
+
           </div>
         )}
         <div
